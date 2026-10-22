@@ -59,23 +59,23 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
 
 **Purpose**: 모노레포, TypeScript, 개발 도구, 환경 변수, 로컬 실행 환경 (영역 A)
 
-- [ ] T001 루트 모노레포를 구성한다: `package.json`(npm workspaces `shared`, `backend`, `frontend`), `tsconfig.base.json`, `.gitignore`, `.nvmrc`
+- [X] T001 루트 모노레포를 구성한다: `package.json`(npm workspaces `shared`, `backend`, `frontend`), `tsconfig.base.json`, `.gitignore`, `.nvmrc`
   - 의존: 없음. 사전 준비로 `git init`을 권장한다(quickstart 1.4).
   - 완료 조건:
     - `tsconfig.base.json`: `strict: true`, ES2023 타깃
     - `.gitignore`: `.env`, `node_modules`, `dist`, `coverage`
     - `.nvmrc` 값 `24`, `engines.node >=24`
-    - 루트 스크립트 자리 정의: `dev`, `build`, `start`, `test`, `test:db`, `typecheck`, `lint`, `db:generate`, `db:migrate`, `dev:ingest`, `dev:analyze`, `llm:ping`, `eval`. 실제 명령은 각 작업에서 채운다.
+    - 루트 스크립트: `dev`, `build`, `start`, `test`, `test:db`, `typecheck`, `lint`, `format`, `db:generate`, `db:migrate`, `dev:ingest`. 나머지(`llm:ping`, `dev:analyze`, `eval`)는 실행 파일이 생기는 T016·T024·T047에서 추가한다(빈 스크립트를 미리 두지 않음).
   - 검증: `npm install` 성공, `git check-ignore .env` 출력이 `.env`
   - 관련: plan.md Project Structure, research R20
 
-- [ ] T002 [P] `shared` 패키지를 초기화한다: `shared/package.json`, `shared/tsconfig.json`, `shared/vitest.config.ts`, `shared/src/index.ts`
+- [X] T002 [P] `shared` 패키지를 초기화한다: `shared/package.json`, `shared/tsconfig.json`, `shared/vitest.config.ts`, `shared/src/index.ts`
   - 의존: T001
   - 완료 조건: zod 4 의존성 추가, ESM 빌드 산출물을 `backend`와 `frontend`가 workspace 의존성으로 import할 수 있다
   - 검증: `npm run build -w shared`, `npm run typecheck -w shared` 성공
   - 관련: research R20
 
-- [ ] T003 [P] `backend` 패키지를 초기화한다: `backend/package.json`, `backend/tsconfig.json`, `backend/vitest.config.ts`
+- [X] T003 [P] `backend` 패키지를 초기화한다: `backend/package.json`, `backend/tsconfig.json`, `backend/vitest.config.ts`
   - 의존: T001
   - 완료 조건:
     - 의존성 설치: `fastify@5`, `@fastify/static`, `zod`, `@google/genai@^2.3.0`, `drizzle-orm`, `postgres`, 개발 의존성 `drizzle-kit`, `tsx`, `vitest`
@@ -83,7 +83,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm run typecheck -w backend`, `npm test -w backend` 실행 성공. 아직 테스트 파일이 없어도 러너가 정상 종료해야 한다.
   - 관련: plan.md Technical Context, research R3, R12, R18
 
-- [ ] T004 [P] `frontend` 패키지를 초기화한다: `frontend/package.json`, `frontend/vite.config.ts`, `frontend/index.html`, `frontend/src/main.tsx`, `frontend/src/App.tsx`, `frontend/src/styles/index.css`
+- [X] T004 [P] `frontend` 패키지를 초기화한다: `frontend/package.json`, `frontend/vite.config.ts`, `frontend/index.html`, `frontend/src/main.tsx`, `frontend/src/App.tsx`, `frontend/src/styles/index.css`
   - 의존: T001
   - 완료 조건:
     - 구성: React 19, Vite, Tailwind CSS v4(`@tailwindcss/vite`), React Router, TanStack Query, `react-markdown`, Vitest + React Testing Library + jsdom
@@ -92,7 +92,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm run dev -w frontend` 후 `http://localhost:5173` 렌더링 확인, `npm run build -w frontend` 성공
   - 관련: research R19
 
-- [ ] T005 개발 도구와 로컬 실행 환경을 구성한다: 루트 `eslint.config.js`, `.prettierrc`, 루트 `package.json`의 `dev`, `lint`, `typecheck`, `test` 스크립트
+- [X] T005 개발 도구와 로컬 실행 환경을 구성한다: 루트 `eslint.config.js`, `.prettierrc`, 루트 `package.json`의 `dev`, `lint`, `typecheck`, `test` 스크립트
   - 의존: T002, T003, T004
   - 완료 조건:
     - typescript-eslint와 Prettier를 적용한다
@@ -101,11 +101,11 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm run lint`, `npm run typecheck` 통과, `npm run dev`로 두 서버 기동 확인
   - 관련: research R22
 
-- [ ] T006 환경 변수 설정과 한도 구성을 구현하고 테스트한다: `.env.example`, `backend/src/config/env.ts`, `backend/src/config/limits.ts`, `backend/tests/unit/config.test.ts`
+- [X] T006 환경 변수 설정과 한도 구성을 구현하고 테스트한다: `.env.example`, `backend/src/config/env.ts`, `backend/src/config/limits.ts`, `backend/tests/unit/config.test.ts`
   - 의존: T003
   - 완료 조건:
     - `.env.example`(작성 완료): quickstart 2장의 모든 변수를 담는다. 필수 값은 비워 두고 선택 값은 기본값을 주석으로 둔다. `env.ts`·`limits.ts`의 기본값과 일치해야 한다
-    - `env.ts`는 zod로 필수 값(`GEMINI_API_KEY`, `GITHUB_TOKEN`, `DATABASE_URL`, `CLIENT_KEY_SALT`)과 기본값을 검증한다. 누락 시 **변수 이름만** 나열하고 값은 출력하지 않은 채 종료한다.
+    - `env.ts`는 zod로 모든 변수와 기본값을 검증하고, 필수 값은 **진입점마다 필요한 것만** 요구한다(서버: `DATABASE_URL`, `dev:ingest`: 없음 → T016·T024·T025에서 `GEMINI_API_KEY`·`GITHUB_TOKEN`·`CLIENT_KEY_SALT` 추가). 누락 시 **변수 이름만** 나열하고 값은 출력하지 않은 채 종료한다. `DATABASE_URL`에 `[YOUR-PASSWORD]`가 남았거나 6543 포트면 바로 알린다.
     - `limits.ts`는 research R5 표의 기본값을 쓰고 `LIMIT_*`, `LLM_MAX_OUTPUT_*`로 덮어쓰며, `Limits` 타입으로 노출한다
   - 검증: `npm test -w backend -- config` 통과. 테스트 항목: 필수 누락 오류 메시지, 비밀값 미노출, 기본값 적용, 숫자 파싱 오류.
   - 관련: Constitution VI, research R5, quickstart 2장
@@ -122,7 +122,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
 
 ### 공유 도메인
 
-- [ ] T007 [P] 공유 도메인 스키마를 구현하고 테스트한다: `shared/src/enums.ts`, `shared/src/sections.ts`, `shared/src/manual.ts`, `shared/src/api.ts`, `shared/tests/schemas.test.ts`
+- [X] T007 [P] 공유 도메인 스키마를 구현하고 테스트한다: `shared/src/enums.ts`, `shared/src/sections.ts`, `shared/src/manual.ts`, `shared/src/api.ts`, `shared/tests/schemas.test.ts`
   - 의존: T002
   - 완료 조건:
     - `enums.ts`: data-model.md Enum 표의 값을 **그대로** 정의한다(`level`, `purpose`, `analysis_status`, `analysis_stage`, `regeneration_mode`, `failure_code`, `partial_reason`, `stop_reason`, `file_source`, `request_reject_reason`)
@@ -132,7 +132,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w shared` 통과. 테스트 항목: 계약 예시 통과, 잘못된 enum 거부, 카탈로그 순서가 계약 표와 일치.
   - 관련: FR-003, FR-004, FR-020, data-model.md, contracts/
 
-- [ ] T008 [P] GitHub URL 파서를 구현하고 테스트한다: `shared/src/repo-url.ts`, `shared/tests/repo-url.test.ts`
+- [X] T008 [P] GitHub URL 파서를 구현하고 테스트한다: `shared/src/repo-url.ts`, `shared/tests/repo-url.test.ts`
   - 의존: T002
   - 완료 조건:
     - 허용 형식: 저장소 기본 주소, `.git` 접미사, `www.` 유무, 끝 슬래시, 스킴 생략(`github.com/o/r`), `/tree/{...}`와 `/blob/{...}` 경로
@@ -145,7 +145,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
 
 ### Database Foundation (B)
 
-- [ ] T009 Supabase 연결, 스키마, 마이그레이션을 구현한다: `backend/src/db/client.ts`, `backend/src/db/schema.ts`, `backend/drizzle.config.ts`, `backend/drizzle/*.sql`
+- [X] T009 Supabase 연결, 스키마, 마이그레이션을 구현한다: `backend/src/db/client.ts`, `backend/src/db/schema.ts`, `backend/drizzle.config.ts`, `backend/drizzle/*.sql`
   - 의존: T003, T006, T007
   - 완료 조건:
     - `client.ts`: postgres.js 연결 풀(Direct 또는 Session pooler 5432)과 종료 처리
@@ -168,22 +168,22 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: 빈 Supabase 프로젝트에 `npm run db:migrate`가 성공하고, 재실행해도 변경이 없다. 대시보드 Table Editor에서 모든 테이블이 "RLS enabled"로 표시된다.
   - 관련: data-model.md, research R12, R13, quickstart 1.3
 
-- [ ] T010 기본 저장·조회 리포지토리와 계약 테스트를 구현한다: `backend/src/db/repositories/types.ts`, `backend/src/db/repositories/{analyses,snapshots,rounds,files,manuals}.ts`, `backend/tests/support/memory-repos.ts`, `backend/tests/contract/repositories.contract.ts`, `backend/tests/unit/memory-repos.test.ts`, `backend/tests/db/repositories.test.ts`
+- [X] T010 기본 저장·조회 리포지토리와 계약 테스트를 구현한다: `backend/src/db/repositories/{analyses,snapshots,rounds,files,manuals,index}.ts`, `backend/tests/support/pglite-db.ts`, `backend/tests/contract/repositories.contract.ts`, `backend/tests/unit/repositories.pglite.test.ts`, `backend/tests/db/repositories.test.ts`
   - 의존: T009
   - 완료 조건:
-    - 리포지토리 인터페이스를 정의한다: 분석 생성·조회·단계/진행 갱신·종료, 스냅샷 upsert, 파일 원문 upsert·조회, 라운드 기록, 작업 집합 기록, 매뉴얼 저장·조회
-    - Postgres 구현과 메모리 구현을 만들고, **같은 계약 테스트 스위트**를 두 구현에 모두 적용한다
-    - 메모리 구현은 `npm test`의 파이프라인 테스트에 쓴다
+    - 리포지토리: 분석 생성·조회·단계/진행 갱신·종료, 스냅샷 upsert, 파일 원문 upsert·조회, 라운드 기록, 작업 집합 기록, 매뉴얼 저장·조회
+    - 구현 변경: 메모리 구현 대신 **PGlite(프로세스 안 Postgres + pgvector)** 를 쓴다. 실제 마이그레이션 SQL로 `npm test`에서 검증되고, 제약을 메모리 코드로 다시 구현할 필요가 없다. 같은 계약 테스트를 PGlite(`npm test`)와 실제 Postgres(`npm run test:db`)에 적용한다.
+    - 파이프라인 테스트도 PGlite DB를 쓴다
   - 검증:
-    - `npm test -w backend -- memory-repos`
-    - `npm run test:db`: 계약 테스트, check 제약 위반 거부(실패인데 코드 없음, 부분인데 사유 없음), upsert 멱등성, cascade 삭제
+    - `npm test -w backend -- repositories.pglite`
+    - `npm run test:db`(선택, `TEST_DATABASE_URL` 필요): 같은 계약 테스트, check 제약 위반 거부(실패인데 코드 없음, 부분인데 사유 없음), upsert 멱등성, cascade 삭제
     - **pgvector 검증**: `pg_extension`에 `vector`가 있고, `'[1,2,3]'::extensions.vector <-> '[1,2,4]'::extensions.vector` 거리 쿼리가 성공한다
     - **RLS 검증**: 모든 테이블의 `pg_class.relrowsecurity = true`
   - 관련: data-model.md, research R12, R13, R21
 
 ### API 골격
 
-- [ ] T011 Fastify 서버 골격, 오류 응답, 헬스 체크를 구현한다: `backend/src/api/server.ts`, `backend/src/api/routes/health.ts`, `backend/src/index.ts`, `backend/tests/unit/api-health.test.ts`
+- [X] T011 Fastify 서버 골격, 오류 응답, 헬스 체크를 구현한다: `backend/src/api/server.ts`, `backend/src/api/routes/health.ts`, `backend/src/index.ts`, `backend/tests/unit/api-health.test.ts`
   - 의존: T006, T007, T010
   - 완료 조건:
     - 의존성을 주입받는 앱 팩토리를 만든다
@@ -197,7 +197,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
 
 ### GitHub Repository Ingestion (C)
 
-- [ ] T012 [P] GitHub 클라이언트와 API 한도·오류 처리를 구현한다: `backend/src/github/client.ts`, `backend/tests/unit/github-client.test.ts`, `backend/tests/fixtures/github/`
+- [X] T012 [P] GitHub 클라이언트와 API 한도·오류 처리를 구현한다: `backend/src/github/client.ts`, `backend/tests/unit/github-client.test.ts`, `backend/tests/fixtures/github/`
   - 의존: T003, T006
   - 완료 조건:
     - `fetch`를 주입받는다
@@ -215,7 +215,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w backend -- github-client` 통과. 상태 코드별 fixture 응답으로 모든 매핑을 확인한다.
   - 관련: FR-006, FR-028, Constitution 보안 제약, research R6
 
-- [ ] T013 ref 해석, 커밋 SHA 고정, 트리 수집을 구현한다: `backend/src/github/resolve-ref.ts`, `backend/tests/unit/resolve-ref.test.ts`
+- [X] T013 ref 해석, 커밋 SHA 고정, 트리 수집을 구현한다: `backend/src/github/resolve-ref.ts`, `backend/tests/unit/resolve-ref.test.ts`
   - 의존: T008, T012
   - 완료 조건:
     - ref가 없으면 `default_branch`를 쓴다
@@ -224,7 +224,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w backend -- resolve-ref` 통과. 사례: 기본 브랜치, 슬래시 포함 브랜치, 존재하지 않는 ref, 잘린 트리.
   - 관련: FR-017, Edge Cases(브랜치·하위 경로), research R6
 
-- [ ] T014 [P] 파일 제외 정책, 시드 선택, 스택 감지, 트리 목록 압축을 구현한다: `backend/src/github/{tree-filter,seeds,stack-detect,tree-listing}.ts`, `backend/tests/unit/{tree-filter,seeds,stack-detect,tree-listing}.test.ts`, `backend/tests/fixtures/trees/`
+- [X] T014 [P] 파일 제외 정책, 시드 선택, 스택 감지, 트리 목록 압축을 구현한다: `backend/src/github/{tree-filter,seeds,stack-detect,tree-listing}.ts`, `backend/tests/unit/{tree-filter,seeds,stack-detect,tree-listing}.test.ts`, `backend/tests/fixtures/trees/`
   - 의존: T007
   - 완료 조건:
     - research R7 규칙을 **그대로** 구현한다
@@ -239,7 +239,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w backend -- tree-filter seeds stack-detect tree-listing` 통과. fixture는 Node 모노레포, Python, 문서 전용, 합성 10,000파일 트리다.
   - 관련: FR-007, FR-009, FR-010, Constitution I, research R7
 
-- [ ] T015 주요 파일 수집(파일 읽기)과 실제 GitHub 수집 스크립트를 구현한다: `backend/src/pipeline/file-reader.ts`, `backend/tests/unit/file-reader.test.ts`, `backend/scripts/dev-ingest.ts`
+- [X] T015 주요 파일 수집(파일 읽기)과 실제 GitHub 수집 스크립트를 구현한다: `backend/src/pipeline/file-reader.ts`, `backend/tests/unit/file-reader.test.ts`, `backend/scripts/dev-ingest.ts`
   - 의존: T010, T012, T013, T014
   - 완료 조건:
     - 커밋 SHA로 읽는다
@@ -253,7 +253,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
 
 ### LLM 어댑터와 작업 관리 (D 기반)
 
-- [ ] T016 [P] LLM 어댑터, 가격표, 비용 계산을 구현한다: `backend/src/llm/client.ts`, `backend/src/llm/gemini-client.ts`, `backend/src/llm/cost.ts`, `backend/src/config/pricing.ts`, `backend/tests/support/fake-llm.ts`, `backend/tests/unit/{gemini-client,cost,pricing}.test.ts`, `backend/scripts/llm-ping.ts`
+- [X] T016 [P] LLM 어댑터, 가격표, 비용 계산을 구현한다: `backend/src/llm/client.ts`, `backend/src/llm/gemini-client.ts`, `backend/src/llm/cost.ts`, `backend/src/config/pricing.ts`, `backend/tests/support/fake-llm.ts`, `backend/tests/unit/{gemini-client,cost,pricing}.test.ts`, `backend/scripts/llm-ping.ts`
   - 의존: T003, T006
   - 완료 조건:
     - `LlmClient.generateStructured({role, model, systemInstruction, input, schema, maxOutputTokens, thinkingLevel})`를 정의한다
@@ -275,7 +275,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w backend -- gemini-client cost pricing` 통과. 항목: SDK mock으로 요청에 `store:false`가 있고 `temperature`가 없음, 스키마 재시도, 백오프, usage 추출, 날짜별 단가 전환. **🔗 연결 ③**: `npm run llm:ping` → 두 기본 모델 각각 작은 스키마의 구조화 응답과 usage 수치 출력
   - 관련: Constitution IV, VI, research R3, R4, contracts/llm-io.md 공통 규칙
 
-- [ ] T017 분석 작업 워커를 구현한다(획득·임대·하트비트·재시도·시간 상한): `backend/src/jobs/worker.ts`, `backend/src/index.ts`(워커 기동 연결), `backend/tests/unit/worker.test.ts`, `backend/tests/db/worker.test.ts`
+- [X] T017 분석 작업 워커를 구현한다(획득·임대·하트비트·재시도·시간 상한): `backend/src/jobs/worker.ts`, `backend/src/index.ts`(워커 기동 연결), `backend/tests/unit/worker.test.ts`, `backend/tests/db/worker.test.ts`
   - 의존: T010, T011
   - 완료 조건:
     - `FOR UPDATE SKIP LOCKED`로 `queued`이거나 임대가 만료된 `running` 작업을 획득한다
@@ -304,7 +304,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
 
 ### Agentic 분석 (D)
 
-- [ ] T018 [P] [US1] 탐색 예산과 종료 조건을 관리하는 BudgetGuard를 구현하고 테스트한다: `backend/src/pipeline/budget.ts`, `backend/tests/unit/budget.test.ts`
+- [X] T018 [P] [US1] 탐색 예산과 종료 조건을 관리하는 BudgetGuard를 구현하고 테스트한다: `backend/src/pipeline/budget.ts`, `backend/tests/unit/budget.test.ts`
   - 의존: T006, T016
   - 완료 조건:
     - 실행 시작 시 한도를 스냅샷한다
@@ -314,7 +314,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w backend -- budget` 통과. 무작위 호출 시퀀스에서 불변식 `usage.costUsd ≤ limits.maxCostUsdPerRun`을 확인한다(SC-008).
   - 관련: FR-013, FR-014, Constitution VI, research R5
 
-- [ ] T019 [P] [US1] LLM 출력 스키마와 프롬프트(Decide, Write, 수준 가이드, FILE 블록)를 구현한다: `backend/src/llm/schemas.ts`, `backend/src/llm/prompts/{file-block,decide,write,level-guides}.ts`, `backend/tests/unit/prompts.test.ts`
+- [X] T019 [P] [US1] LLM 출력 스키마와 프롬프트(Decide, Write, 수준 가이드, FILE 블록)를 구현한다: `backend/src/llm/schemas.ts`, `backend/src/llm/prompts/{file-block,decide,write,level-guides}.ts`, `backend/tests/unit/prompts.test.ts`
   - 의존: T007, T016
   - 완료 조건:
     - `DecideOutput`과 `WriteOutput` zod 스키마를 contracts/llm-io.md 그대로 정의하고, 중첩은 3단계 이하로 둔다
@@ -326,7 +326,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w backend -- prompts` 통과. 항목: 라인 번호 형식, 필수 지시 문구 포함, 두 스키마의 JSON Schema 생성 성공과 깊이 3 이하, 수준별 가이드 존재.
   - 관련: FR-015, FR-020, FR-021, research R3, R9, contracts/llm-io.md
 
-- [ ] T020 [P] [US1] Decide 요청 검증기를 구현한다(순수 함수): `backend/src/pipeline/request-validator.ts`, `backend/tests/unit/request-validator.test.ts`
+- [X] T020 [P] [US1] Decide 요청 검증기를 구현한다(순수 함수): `backend/src/pipeline/request-validator.ts`, `backend/tests/unit/request-validator.test.ts`
   - 의존: T007, T014
   - 완료 조건:
     - 경로를 정규화한다(`./`, 앞 `/` 제거)
@@ -337,7 +337,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w backend -- request-validator` 통과. 거절 사유별 사례와 라인 범위 위반 사례를 포함한다.
   - 관련: FR-009, FR-011, Constitution I, II, contracts/llm-io.md §1 코드 후처리
 
-- [ ] T021 [US1] 조건부 추가 탐색 루프를 구현한다(초기 탐색 → Gemini 파일 선택 → 충분성 판단 → 추가 탐색 → 탐색 기록 저장): `backend/src/pipeline/explore-loop.ts`, `backend/src/pipeline/progress.ts`, `backend/tests/support/fake-github.ts`, `backend/tests/integration/explore-loop.test.ts`
+- [X] T021 [US1] 조건부 추가 탐색 루프를 구현한다(초기 탐색 → Gemini 파일 선택 → 충분성 판단 → 추가 탐색 → 탐색 기록 저장): `backend/src/pipeline/explore-loop.ts`, `backend/src/pipeline/progress.ts`, `backend/tests/support/fake-github.ts`, `backend/tests/integration/explore-loop.test.ts`
   - 의존: T015, T018, T019, T020
   - 완료 조건:
     - research R1 루프를 구현한다
@@ -364,7 +364,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
 
 ### 매뉴얼 생성 (F) · 근거 연결 (E-MVP)
 
-- [ ] T022 [P] [US1] 근거 연결 검증과 매뉴얼 조립을 구현한다: `backend/src/pipeline/citation-validator.ts`, `backend/src/pipeline/manual-assembler.ts`, `backend/src/github/permalink.ts`, `backend/tests/unit/{citation-validator,manual-assembler}.test.ts`
+- [X] T022 [P] [US1] 근거 연결 검증과 매뉴얼 조립을 구현한다: `backend/src/pipeline/citation-validator.ts`, `backend/src/pipeline/manual-assembler.ts`, `backend/src/github/permalink.ts`, `backend/tests/unit/{citation-validator,manual-assembler}.test.ts`
   - 의존: T007, T019
   - 완료 조건:
     - research R8 규칙 1~6을 **그대로** 구현한다
@@ -384,7 +384,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w backend -- citation-validator manual-assembler` 통과. contracts/manual.md 불변식 1~6을 각각 테스트한다.
   - 관련: FR-022, FR-024, FR-025, FR-026, Constitution V, contracts/manual.md
 
-- [ ] T023 [US1] 사용자 수준·목적을 반영한 Write 입력 구성과 매뉴얼 생성을 구현한다: `backend/src/pipeline/write-manual.ts`, `backend/tests/unit/write-manual.test.ts`
+- [X] T023 [US1] 사용자 수준·목적을 반영한 Write 입력 구성과 매뉴얼 생성을 구현한다: `backend/src/pipeline/write-manual.ts`, `backend/tests/unit/write-manual.test.ts`
   - 의존: T018, T019, T022
   - 완료 조건:
     - 원문 우선순위: 시드 → covered 근거 파일 → 나중 라운드 → 그 외
@@ -396,7 +396,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w backend -- write-manual` 통과. 항목: 우선순위 정렬, 빡빡한 비용 상한에서의 축소 순서, `content_trimmed` 판정, 수준별로 다른 가이드가 프롬프트에 들어감.
   - 관련: FR-020, FR-021, FR-023, Constitution VI, contracts/llm-io.md §2
 
-- [ ] T024 [US1] 분석 오케스트레이터를 구현하고 워커에 연결한다: `backend/src/pipeline/run-analysis.ts`, `backend/src/index.ts`(핸들러 등록), `backend/tests/integration/run-analysis.test.ts`, `backend/scripts/dev-analyze.ts`
+- [X] T024 [US1] 분석 오케스트레이터를 구현하고 워커에 연결한다: `backend/src/pipeline/run-analysis.ts`, `backend/src/index.ts`(핸들러 등록), `backend/tests/integration/run-analysis.test.ts`, `backend/scripts/dev-analyze.ts`
   - 의존: T017, T021, T023
   - 완료 조건:
     - 단계 전이: `validating_repo`(공개 확인, ref 해석, 커밋 고정) → `scanning_structure`(스냅샷 upsert·재사용, 필터, 시드) → 탐색 루프 → `writing_manual` → `done`
@@ -419,7 +419,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
 
 ### API (매뉴얼 저장·조회)
 
-- [ ] T025 [US1] 분석 시작·상태·매뉴얼 조회 API와 사용자 안내 고정 문구를 구현한다: `backend/src/api/routes/analyses.ts`, `backend/src/api/client-key.ts`(IP 해시만), `backend/src/api/messages.ts`, `backend/tests/unit/{api-analyses,messages}.test.ts`
+- [X] T025 [US1] 분석 시작·상태·매뉴얼 조회 API와 사용자 안내 고정 문구를 구현한다: `backend/src/api/routes/analyses.ts`, `backend/src/api/client-key.ts`(IP 해시만), `backend/src/api/messages.ts`, `backend/tests/unit/{api-analyses,messages}.test.ts`
   - 의존: T011, T024
   - 완료 조건:
     - `messages.ts`: 모든 `failure_code`와 `partial_reason`을 한국어 `{message, action}`에 매핑한다. 문구는 contracts/http-api.md "사용자 메시지 매핑" 표를 따르고, LLM 생성 문구는 쓰지 않는다(Constitution II, 보안 제약, FR-028)
@@ -435,7 +435,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
 
 ### Frontend (G)
 
-- [ ] T026 [P] [US1] 프론트엔드 API 계층과 폴링 훅을 구현한다: `frontend/src/api/client.ts`, `frontend/src/api/queries.ts`, `frontend/src/lib/labels.ts`, `frontend/tests/queries.test.tsx`
+- [X] T026 [P] [US1] 프론트엔드 API 계층과 폴링 훅을 구현한다: `frontend/src/api/client.ts`, `frontend/src/api/queries.ts`, `frontend/src/lib/labels.ts`, `frontend/tests/queries.test.tsx`
   - 의존: T004, T007(백엔드 구현과 무관하게 shared 계약만 사용)
   - 완료 조건:
     - fetch 래퍼가 `ErrorResponse`를 파싱한다
@@ -446,7 +446,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w frontend -- queries` 통과. mock fetch로 종료 상태에서 폴링이 멈추는지, 오류가 파싱되는지 확인한다.
   - 관련: FR-018, SC-002, research R11
 
-- [ ] T027 [US1] 홈 화면(저장소 URL 입력, 사용자 수준 선택, 매뉴얼 목적 선택)을 구현한다: `frontend/src/pages/HomePage.tsx`, `frontend/src/components/{RepoForm,LevelPicker,PurposePicker}.tsx`, `frontend/tests/RepoForm.test.tsx`
+- [X] T027 [US1] 홈 화면(저장소 URL 입력, 사용자 수준 선택, 매뉴얼 목적 선택)을 구현한다: `frontend/src/pages/HomePage.tsx`, `frontend/src/components/{RepoForm,LevelPicker,PurposePicker}.tsx`, `frontend/tests/RepoForm.test.tsx`
   - 의존: T008, T026
   - 완료 조건:
     - shared 파서로 즉시 검증하고 형식 예시를 표시한다(FR-002)
@@ -458,7 +458,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w frontend -- RepoForm` 통과. 항목: 잘못된 URL 메시지, 버튼 활성 조건, 제출 시 이동.
   - 관련: FR-001~FR-005, US1 #1
 
-- [ ] T028 [US1] 분석 화면(진행 상태, 매뉴얼 결과, 원본 GitHub 근거 링크)을 구현한다: `frontend/src/pages/AnalysisPage.tsx`, `frontend/src/components/{ProgressStepper,ManualView,SectionView,BlockView,LevelExtrasView,FactBadge,EvidenceChip,NotFoundNotice,SafeMarkdown,PartialBanner,FailureNotice}.tsx`, `frontend/tests/{ManualView,ProgressStepper,PartialBanner,FailureNotice}.test.tsx`
+- [X] T028 [US1] 분석 화면(진행 상태, 매뉴얼 결과, 원본 GitHub 근거 링크)을 구현한다: `frontend/src/pages/AnalysisPage.tsx`, `frontend/src/components/{ProgressStepper,ManualView,SectionView,BlockView,LevelExtrasView,FactBadge,EvidenceChip,NotFoundNotice,SafeMarkdown,PartialBanner,FailureNotice}.tsx`, `frontend/tests/{ManualView,ProgressStepper,PartialBanner,FailureNotice}.test.tsx`
   - 의존: T026
   - 완료 조건:
     - 진행 표시: 7단계 스텝퍼, 추가 탐색 `n/최대`, 읽은 파일 수, 현재 활동(`progress.activity`)과 경과 시간, queued면 대기 순서(`queuePosition`)와 대기 경과 시간(1초 간격 클라이언트 계산)
@@ -478,7 +478,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
 
 ### US1 통합 검증 (H)
 
-- [ ] T029 [US1] Frontend/Backend 통합과 US1 시나리오를 검증하고 기록한다: `specs/001-repo-manual-generator/verification-log.md`
+- [X] T029 [US1] Frontend/Backend 통합과 US1 시나리오를 검증하고 기록한다: `specs/001-repo-manual-generator/verification-log.md`
   - 의존: T025, T027, T028
   - 완료 조건: `npm run dev`로 quickstart V1, V3, V4를 실제 저장소로 수행하고, 결과(저장소, 소요 시간, 비용, 상태, 관찰 내용)를 기록한다
   - 검증:
@@ -562,6 +562,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
     - 실행 중 GitHub 한도 → `failed(github_rate_limited)`, 재시도 가능 시각을 `failure_retry_at`에 저장한다(Gemini 한도 `llm_rate_limited`도 같은 방식)
     - Gemini 장애 → `failed(llm_unavailable)`
     - 문서 전용 저장소 → 해당 없는 섹션 not_found
+    - 심볼릭 링크 README(모노레포, 예: vercel/next.js의 루트 `readme.md`)는 링크 대상 파일을 시드로 읽는다. T015 실측에서 symlink 제외 규칙 때문에 루트 README가 시드에서 빠지는 것을 확인했다.
     - 분석 도중 새 커밋이 생겨도 고정 SHA를 유지
   - 검증: `npm test -w backend -- run-analysis-edge` 통과. 엣지 케이스마다 fixture를 하나씩 둔다.
   - 관련: spec Edge Cases, FR-013, FR-017, FR-028

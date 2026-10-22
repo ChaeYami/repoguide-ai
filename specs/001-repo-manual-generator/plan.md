@@ -27,7 +27,7 @@
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.x (strict), Node.js 24 LTS
+**Language/Version**: TypeScript 6.0 (strict), Node.js 24 LTS. TypeScript 7(네이티브)은 typescript-eslint가 아직 지원하지 않아(<6.1) 6.0을 쓴다.
 
 **Primary Dependencies**:
 - Backend:
@@ -49,7 +49,8 @@
 **Testing**:
 - Vitest (backend·frontend 공통), React Testing Library
 - Fake GitHub와 Fake LLM 기반 파이프라인 통합 테스트
-- `TEST_DATABASE_URL` 기반 DB 통합 테스트
+- PGlite(프로세스 안 Postgres + pgvector) 기반 SQL 계약 테스트 (`npm test`, 외부 DB 불필요)
+- `TEST_DATABASE_URL` 기반 DB 통합 테스트 (선택, 동시성 검증용)
 - 실제 API 평가 스크립트(`npm run eval`)
 
 **Target Platform**:

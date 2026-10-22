@@ -47,6 +47,9 @@ Phase 0 조사 결과다. 각 항목은 Decision / Rationale / Alternatives cons
   - 2·3라운드 = 추가 탐색(Decide #2·#3 → 읽기)
 - 마지막 라운드의 파일을 읽은 뒤에는 Decide를 다시 호출하지 않고 바로 Write로 넘어간다. Write가
   원문을 직접 받기 때문이다.
+- Decide #1은 시드 원문 없이 파일 목록만 보고 판단한다. 그래서 Decide #1이 새 파일을 하나도 고르지
+  않아도(예: 이미 읽은 시드만 다시 요청) 바로 끝내지 않고, 시드 원문을 붙여 Decide #2를 한 번 더
+  호출한다. 실제 실행에서 이 경우 README와 package.json만으로 매뉴얼이 작성된 것을 보고 추가했다.
 - 종료 사유(stopReason)는 `sufficient`, `no_more_candidates`, `round_limit`, `file_limit`,
   `cost_limit`, `token_limit`, `github_call_limit`, `timeout` 중 하나로 코드가 기록한다.
 
@@ -111,8 +114,13 @@ Phase 0 조사 결과다. 각 항목은 Decision / Rationale / Alternatives cons
   유지하고, 블록 유형을 하나의 객체와 선택 필드로 표현해 분기를 줄인다.
 - 포럼에 Interactions API의 입력 토큰이 0으로 보고되는 버그 사례가 있다. 사용량이 0이면 사전
   추정치를 기록하고 `usage_estimated=true`로 표시한다.
-- 구현 시 확인: SDK 타입에서 `max_output_tokens`의 위치와 정확한 필드명, `thinking_level`의
-  허용 값.
+- 구현 시 확인 결과(`@google/genai` 2.30.0):
+  - 요청: `generation_config.max_output_tokens`, `generation_config.thinking_level`
+    (`minimal` | `low` | `medium` | `high`). 구조화 출력은 `response_format`.
+  - 응답: `output_text`, `usage.total_input_tokens`·`total_output_tokens`·`total_thought_tokens`.
+  - `gemini-3.8-flash`는 `minimal`을 거부한다(HTTP 400). Decide와 Write 모두 `low`를 쓴다.
+  - 실측 지연(2026-10-22): `gemini-3.5-flash-lite` Decide는 호출당 수 초, `gemini-3.8-flash`
+    Write는 출력 1만여 토큰에 4~5분이 걸렸다. SC-001(5분)에 대한 위험으로 T029 검증 기록에 남긴다.
 
 **Alternatives considered**:
 - `models.generateContent`: 지원은 계속되지만 legacy다. 어댑터 내부의 대체 경로로만 남긴다.
@@ -203,7 +211,8 @@ Personal Access Token(공개 저장소 읽기 전용)** 으로 한다.
 | 최신 커밋 확인(재조회) | 위 커밋 엔드포인트 | 결과를 5분간 메모리 캐시 |
 
 - 공통 헤더: `Authorization: Bearer <GITHUB_TOKEN>`, `Accept: application/vnd.github+json`,
-  `X-GitHub-Api-Version`(구현 시 문서의 최신 버전 확인).
+  `X-GitHub-Api-Version: 2026-03-10`, `User-Agent: repoguide-ai`. (구현 시 확인: 최신 버전이며, 이 버전의
+  호환성 변경은 우리가 쓰는 엔드포인트에 영향이 없다. 이전 버전 2022-11-28은 2028-03-10에 지원 종료.)
 - 한도: 토큰 없이는 IP당 시간당 60회, PAT는 시간당 5,000회다. 초과 시 `403/429`가 오고,
   `x-ratelimit-remaining`, `x-ratelimit-reset`, `retry-after` 헤더로 판단해 `github_rate_limited`와
   재시도 가능 시각을 안내한다.
@@ -476,8 +485,12 @@ Testing Library로 테스트한다.
 - **파이프라인 통합 테스트**: 고정 데이터 기반 `FakeGitHub`와 각본 기반 `FakeLlmClient`로 단계
   전이, 한도 도달 시 부분 완료, 인용 강등, 프롬프트 인젝션 파일이 있어도 한도와 절차가 유지되는지
   검증한다.
+- **SQL 테스트(구현 시 변경)**: `npm test`는 PGlite(프로세스 안 Postgres + pgvector 확장)에 실제
+  마이그레이션을 적용해 리포지토리 계약, 제약, pgvector, RLS를 검증한다. 메모리 리포지토리는 만들지 않는다.
+  제약을 코드로 다시 구현하지 않아도 되고 외부 DB 없이 실제 SQL을 검증할 수 있기 때문이다.
 - **DB 통합 테스트**: `TEST_DATABASE_URL`이 필요하다(별도 Supabase 프로젝트 또는 로컬 Postgres).
-  `npm run test:db`로 실행하며 작업 획득·임대, 만료 정리, 요청 제한 쿼리를 검증한다.
+  `npm run test:db`로 실행하며 같은 계약 테스트와, PGlite로 검증할 수 없는 동시성(작업 획득·임대),
+  만료 정리, 요청 제한 쿼리를 검증한다.
 - **평가 스크립트**(`npm run eval`): 실제 API로 평가 저장소 5~10개를 분석해 다음을 출력한다.
   사람 평가(SC-005, SC-006)는 quickstart 절차를 따른다.
   - README 외 근거 포함 여부(SC-004)
