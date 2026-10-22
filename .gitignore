@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Test / coverage
+coverage/
+
+# Environment — 실제 키와 접속 정보는 절대 커밋하지 않는다
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# oh-my-claudecode runtime state — 작업 위치에 따라 하위 폴더에도 생기므로 모든 위치를 무시 (프로젝트 스킬만 커밋)
+**/.omc/*
+!**/.omc/skills/
