@@ -34,7 +34,17 @@ export interface GeminiClientOptions {
   sleep?: (ms: number) => Promise<void>;
 }
 
-const TRANSIENT_BACKOFF_MS = [1_000, 3_000, 9_000];
+// 분당 한도(RPM·TPM)는 수십 초 뒤에 풀리므로 짧은 백오프로는 회복하지 못한다(T048 평가에서 확인).
+const TRANSIENT_BACKOFF_MS = [5_000, 15_000, 45_000];
+/** 429 응답이 알려 주는 대기 시간도 이보다 길면 기다리지 않는다(실행 시간 상한 안에서 끝내기 위해). */
+const MAX_RETRY_DELAY_MS = 90_000;
+
+/** Gemini 429 응답의 RetryInfo(예: "retryDelay": "41s")에서 대기 시간을 읽는다. */
+export function retryDelayMs(error: unknown): number | null {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  const match = /retryDelay\\?"?\s*:\s*\\?"(\d+(?:\.\d+)?)s/.exec(message);
+  return match ? Math.ceil(Number(match[1]) * 1000) : null;
+}
 const MAX_SCHEMA_RETRIES = 1;
 
 function statusOf(error: unknown): number | undefined {
@@ -106,7 +116,9 @@ export class GeminiClient implements LlmClient {
       } catch (error) {
         const { code, transient } = classify(error);
         if (transient && transientRetries < TRANSIENT_BACKOFF_MS.length) {
-          await this.sleep(TRANSIENT_BACKOFF_MS[transientRetries++]!);
+          const backoff = TRANSIENT_BACKOFF_MS[transientRetries++]!;
+          const suggested = code === "llm_rate_limited" ? retryDelayMs(error) : null;
+          await this.sleep(Math.min(MAX_RETRY_DELAY_MS, Math.max(backoff, (suggested ?? 0) + 1_000)));
           continue;
         }
         // 진단용 상세(서버 로그 전용). 사용자 안내는 고정 문구를 쓴다.

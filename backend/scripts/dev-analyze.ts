@@ -34,9 +34,11 @@ async function main() {
   const db = createPostgresDb(env.DATABASE_URL!, { max: 3 });
   const repos = createRepositories(db.db);
   const llm = new GeminiClient({ apiKey: env.GEMINI_API_KEY! });
-  const analysis = await repos.analyses.create(
+  const created = await repos.analyses.create(
     analysisFromUrl(parsed.value, { level, purpose, limits, clientKeyHash: "dev-analyze", retentionDays: env.RETENTION_DAYS }),
   );
+  // 같은 DB를 쓰는 서버가 떠 있어도 그 워커가 이 분석을 가져가지 않도록 직접 맡는다.
+  const analysis = (await repos.analyses.claimById(created.id, "dev-analyze", limits.runTimeoutSec * 2000))!;
   console.log(`분석 ${analysis.id} 시작 — ${parsed.value.owner}/${parsed.value.name} · ${level} · ${purpose}\n`);
 
   const started = Date.now();

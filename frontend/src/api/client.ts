@@ -1,13 +1,22 @@
 import {
   type AnalysisDetail,
   AnalysisDetailSchema,
+  type BatchSummaryResponse,
+  BatchSummaryResponseSchema,
   type CreateAnalysisRequest,
   type CreateAnalysisResponse,
   CreateAnalysisResponseSchema,
+  type FreshnessResponse,
+  FreshnessResponseSchema,
+  type RegenerationRequest,
+  type RegenerationResponse,
+  RegenerationResponseSchema,
   type ErrorResponse,
   ErrorResponseSchema,
   type Manual,
   ManualSchema,
+  type TraceResponse,
+  TraceResponseSchema,
 } from "@repoguide/shared";
 
 // 백엔드 API 호출. 응답은 shared 계약 스키마로 검증하고, 오류는 사용자 문구(ErrorResponse)로 바꾼다.
@@ -57,4 +66,15 @@ export const api = {
     apiRequest(`/api/analyses/${encodeURIComponent(id)}`, AnalysisDetailSchema),
   getManual: (id: string): Promise<Manual> =>
     apiRequest(`/api/analyses/${encodeURIComponent(id)}/manual`, ManualSchema),
+  getTrace: (id: string): Promise<TraceResponse> =>
+    apiRequest(`/api/analyses/${encodeURIComponent(id)}/trace`, TraceResponseSchema),
+  getFreshness: (id: string): Promise<FreshnessResponse> =>
+    apiRequest(`/api/analyses/${encodeURIComponent(id)}/freshness`, FreshnessResponseSchema),
+  regenerate: (id: string, request: RegenerationRequest): Promise<RegenerationResponse> =>
+    apiRequest(`/api/analyses/${encodeURIComponent(id)}/regenerations`, RegenerationResponseSchema, {
+      method: "POST",
+      body: JSON.stringify(request),
+    }),
+  getBatch: (ids: string[]): Promise<BatchSummaryResponse> =>
+    apiRequest(`/api/analyses?ids=${ids.map(encodeURIComponent).join(",")}`, BatchSummaryResponseSchema),
 };

@@ -1,0 +1,48 @@
+{
+  "$comment": "npm run eval 평가 목록 (T047). keyFiles는 사람이 지정한 핵심 파일이며 대형 저장소의 누락률(research R13 확장 조건)에 쓴다.",
+  "repos": [
+    {
+      "url": "https://github.com/academind/node-restful-api-tutorial",
+      "note": "README 453바이트 — 빈약한 README",
+      "thinReadme": true,
+      "runs": [{ "level": "beginner", "purpose": "setup" }]
+    },
+    {
+      "url": "https://github.com/WebDevSimplified/Nodejs-Passport-Login",
+      "note": "README 없음 — 빈약한 README",
+      "thinReadme": true,
+      "runs": [{ "level": "vibe_coder", "purpose": "modify" }]
+    },
+    {
+      "url": "https://github.com/expressjs/express",
+      "note": "Node 라이브러리, 후보 200개 이상 — 목적별 작업 집합 차이(Jaccard)",
+      "runs": [
+        { "level": "developer", "purpose": "understand" },
+        { "level": "developer", "purpose": "setup" },
+        { "level": "developer", "purpose": "modify" }
+      ]
+    },
+    {
+      "url": "https://github.com/pallets/click",
+      "note": "Python 라이브러리",
+      "runs": [{ "level": "beginner", "purpose": "understand" }]
+    },
+    {
+      "url": "https://github.com/spf13/cobra",
+      "note": "Go 라이브러리",
+      "runs": [{ "level": "vibe_coder", "purpose": "modify" }]
+    },
+    {
+      "url": "https://github.com/vitejs/vite",
+      "note": "파일 1,000개 초과 모노레포 — 핵심 파일 누락률",
+      "large": true,
+      "keyFiles": ["packages/vite/package.json", "packages/vite/src/node/cli.ts", "packages/vite/src/node/server/index.ts", "packages/vite/src/node/build.ts", "packages/vite/src/node/config.ts"],
+      "runs": [{ "level": "developer", "purpose": "understand" }]
+    },
+    {
+      "url": "https://github.com/jlevy/the-art-of-command-line",
+      "note": "문서 전용 저장소",
+      "runs": [{ "level": "beginner", "purpose": "understand" }]
+    }
+  ]
+}

@@ -41,6 +41,32 @@ describe("ManualView", () => {
     expect(within(screen.getByRole("region", { name: "의존성" })).getByText(/저장소에서 확인되지 않음/)).toBeInTheDocument();
   });
 
+  it("treats a section with only inference blocks as not confirmed and shows the guidance below (FR-022)", () => {
+    const base = manual();
+    const inferenceOnly = {
+      ...base,
+      sections: base.sections.map((s) =>
+        s.id === "run_commands"
+          ? { ...s, status: "partial" as const, blocks: [{ id: "run_commands.1", type: "text" as const, markdown: "보통 `node server.js`로 실행합니다.", kind: "inference" as const, downgraded: false, evidence: [] }] }
+          : s,
+      ),
+    };
+    render(<ManualView manual={inferenceOnly} />);
+    const section = screen.getByRole("region", { name: "실행 명령" });
+    expect(within(section).getByText(/저장소에서 확인되지 않음.*일반적인 관행에 따른 안내/)).toBeInTheDocument();
+    expect(within(section).getByText("추론")).toBeInTheDocument();
+    expect(within(section).queryByText("일부만 확인됨")).toBeNull();
+  });
+
+  it("keeps the 'partially confirmed' badge when a partial section has facts", () => {
+    const base = manual();
+    const partial = { ...base, sections: base.sections.map((s) => (s.id === "environment" ? { ...s, status: "partial" as const } : s)) };
+    render(<ManualView manual={partial} />);
+    const section = screen.getByRole("region", { name: /실행 환경/ });
+    expect(within(section).getByText("일부만 확인됨")).toBeInTheDocument();
+    expect(within(section).queryByText(/저장소에서 확인되지 않음/)).toBeNull();
+  });
+
   it("never renders raw HTML or javascript: links from the model", () => {
     const { container } = render(<ManualView manual={manual()} />);
     expect(container.querySelector("script")).toBeNull();

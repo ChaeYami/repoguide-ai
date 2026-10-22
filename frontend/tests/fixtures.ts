@@ -1,4 +1,4 @@
-import type { AnalysisDetail, Manual } from "@repoguide/shared";
+import type { AnalysisDetail, Manual, TraceResponse } from "@repoguide/shared";
 
 export const SHA = "0123456789abcdef0123456789abcdef01234567";
 export const ID = "11111111-1111-4111-8111-111111111111";
@@ -70,6 +70,36 @@ export function manual(overrides: Partial<Manual> = {}): Manual {
     generatedAt: new Date().toISOString(),
     model: "gemini-3.8-flash",
     promptVersion: "test",
+    ...overrides,
+  };
+}
+
+export function trace(overrides: Partial<TraceResponse> = {}): TraceResponse {
+  return {
+    repo: { owner: "acme", name: "demo", ref: "main", commitSha: SHA, subpath: null, htmlUrl: "https://github.com/acme/demo" },
+    detectedStack: { languages: ["TypeScript"], packageManagers: ["npm"], frameworkHints: ["Express"], manifests: ["package.json"] },
+    treeStats: { entryCount: 120, candidateCount: 80, truncated: false },
+    limits: { maxRounds: 3, maxFiles: 40, maxCostUsdPerRun: 0.3 },
+    usage: { rounds: 2, filesRead: 6, githubCalls: 9, inputTokens: 20_000, outputTokens: 5_000, thoughtTokens: 0, costUsd: 0.0421, usageEstimated: false },
+    stopReason: "file_limit",
+    limitReached: true,
+    decisions: [
+      {
+        decideNo: 1,
+        sufficient: false,
+        coverage: [{ sectionId: "run_commands", status: "covered", note: "package.json scripts" }],
+        requests: [
+          { path: "src/server.ts", reason: "서버 진입점", accepted: true, rejectReason: null },
+          { path: "src/missing.ts", reason: "추측한 경로", accepted: false, rejectReason: "not_in_tree" },
+          { path: "docs/very/long/path/that/should/wrap/setup-guide-for-everything.md", reason: "설치 문서", accepted: false, rejectReason: "over_file_limit" },
+        ],
+        expandedDirectories: ["src/routes"],
+      },
+    ],
+    files: [
+      { path: "README.md", roundNo: 1, source: "seed", reason: "readme", sizeBytes: 300, truncated: false, contentIncludedInWrite: true, githubUrl: `https://github.com/acme/demo/blob/${SHA}/README.md` },
+      { path: "src/server.ts", roundNo: 1, source: "llm_request", reason: "서버 진입점", sizeBytes: 900, truncated: true, contentIncludedInWrite: false, githubUrl: `https://github.com/acme/demo/blob/${SHA}/src/server.ts` },
+    ],
     ...overrides,
   };
 }

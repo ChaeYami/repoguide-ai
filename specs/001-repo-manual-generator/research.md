@@ -29,7 +29,7 @@ Phase 0 조사 결과다. 각 항목은 Decision / Rationale / Alternatives cons
 [코드] URL 파싱 → 저장소 확인 → 커밋 고정 → 트리 수집·필터 → 스택 감지 → 시드 파일 결정
    │
    ▼
-[LLM:Decide #1] 트리 목록 + 수준/목적 + 필수 섹션 → 읽을 파일 요청(+이유)
+[LLM:Decide #1] 트리 목록 + 시드 원문 + 수준/목적 + 필수 섹션 → 시드 노트·읽을 파일 요청(+이유)
    │  [코드] 요청 검증(트리에 존재? 제외 대상? 중복? 한도?) → 파일 읽기 (Round 1)
    ▼
 [LLM:Decide #2] 새로 읽은 파일 내용 → 파일 노트, 섹션별 커버리지, sufficient, 추가 요청
@@ -47,9 +47,10 @@ Phase 0 조사 결과다. 각 항목은 Decision / Rationale / Alternatives cons
   - 2·3라운드 = 추가 탐색(Decide #2·#3 → 읽기)
 - 마지막 라운드의 파일을 읽은 뒤에는 Decide를 다시 호출하지 않고 바로 Write로 넘어간다. Write가
   원문을 직접 받기 때문이다.
-- Decide #1은 시드 원문 없이 파일 목록만 보고 판단한다. 그래서 Decide #1이 새 파일을 하나도 고르지
-  않아도(예: 이미 읽은 시드만 다시 요청) 바로 끝내지 않고, 시드 원문을 붙여 Decide #2를 한 번 더
-  호출한다. 실제 실행에서 이 경우 README와 package.json만으로 매뉴얼이 작성된 것을 보고 추가했다.
+- 시드는 Decide #1 전에 이미 읽으므로 그 원문을 Decide #1에 바로 넣는다. 이후 라운드에서 읽은
+  파일은 다음 Decide에 넣는다(원문은 Decide에 한 번만 보여 준다). 처음에는 Decide #1에 파일 목록만
+  주었는데, 실제 실행에서 Decide #1이 원문을 보려고 README·package.json만 다시 요청해 탐색이 시드에서
+  끝나는 일이 반복되어 바꿨다(T029·T037 검증 기록).
 - 종료 사유(stopReason)는 `sufficient`, `no_more_candidates`, `round_limit`, `file_limit`,
   `cost_limit`, `token_limit`, `github_call_limit`, `timeout` 중 하나로 코드가 기록한다.
 

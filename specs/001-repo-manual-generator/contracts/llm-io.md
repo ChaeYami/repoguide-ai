@@ -24,8 +24,9 @@ Constitution IV에 따라 LLM 호출 지점은 아래 **두 개뿐이다**. 새 
 - 스키마 검증에 실패하면 오류 요약을 붙여 **1회만** 재시도한다. 다시 실패하면 Decide는 "요청 없음,
   sufficient=false"로 처리하고 `stop_reason=no_more_candidates`가 된다. Write는
   `failed(manual_generation_failed)`가 된다.
-- `429`와 `5xx`는 지수 백오프로 최대 3회 재시도한다. 끝내 실패하면 각각 `llm_rate_limited`,
-  `llm_unavailable`이 된다. 재시도한 호출도 사용량을 합산한다.
+- `429`와 `5xx`는 5·15·45초 백오프로 최대 3회 재시도한다. `429` 응답의 RetryInfo(`retryDelay`)가
+  더 길면 그만큼 기다리되 90초를 넘기지 않는다(분당 한도는 수십 초 뒤에 풀린다, T048 평가에서 확인).
+  끝내 실패하면 각각 `llm_rate_limited`, `llm_unavailable`이 된다. 재시도한 호출도 사용량을 합산한다.
 
 ## 1. Decide — 파일 선택·충분성 판단
 
@@ -40,7 +41,7 @@ Constitution IV에 따라 LLM 호출 지점은 아래 **두 개뿐이다**. 새 
 | 사용자 맥락 | `level`, `purpose`, 목적별 필수 섹션 카탈로그(id와 설명) |
 | 트리 목록 | 필터 후 경로·크기 (최대 2,000항목, 접힌 디렉터리는 `dir/ (N files)`) |
 | 이미 읽은 파일 | 경로 목록 + 이전 라운드 `fileNotes` 누적 |
-| 새로 읽은 파일 원문 | 이번 라운드에 읽은 파일만 FILE 블록으로 전달 (Decide #1에는 없음) |
+| 새로 읽은 파일 원문 | 이번 라운드에 읽은 파일만 FILE 블록으로 전달 (Decide #1에는 시드 원문) |
 | 남은 예산 | 남은 라운드, 남은 파일 수, 라운드당 최대 요청 수 |
 
 ### 출력 스키마

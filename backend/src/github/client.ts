@@ -183,6 +183,15 @@ export class GitHubClient {
     return new Uint8Array(await res.arrayBuffer());
   }
 
+  /** git blob 원문. 심볼릭 링크 blob의 내용은 링크 대상 경로다. */
+  async getBlobText(owner: string, name: string, blobSha: string): Promise<string> {
+    const res = await this.request(
+      `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(name)}/git/blobs/${encodeURIComponent(blobSha)}`,
+      { accept: "application/vnd.github.raw+json", map: { 404: "file_not_found" } },
+    );
+    return res.text();
+  }
+
   private async request(path: string, opts: { accept: string; map: StatusMapping }): Promise<Response> {
     return this.semaphore.run(async () => {
       let serverRetries = 0;

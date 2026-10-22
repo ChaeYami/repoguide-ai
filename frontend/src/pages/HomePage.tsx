@@ -1,6 +1,6 @@
+import { RecentList } from "../components/RecentList";
 import { RepoForm } from "../components/RepoForm";
 
-// 최근 분석 목록은 T039에서 추가한다.
 export function HomePage() {
   return (
     <>
@@ -9,6 +9,7 @@ export function HomePage() {
         GitHub 저장소 주소를 넣으면 실제 코드와 문서를 분석해 내 수준과 목적에 맞는 매뉴얼을 만들어 드려요.
       </p>
       <RepoForm />
+      <RecentList />
     </>
   );
 }

@@ -54,8 +54,8 @@ export function buildDecidePrompt(input: DecidePromptInput): { systemInstruction
     input.collapsedDirectories.length ? `접힌 디렉터리: ${input.collapsedDirectories.slice(0, 200).join(", ")}` : "",
     "## 이미 읽었거나 읽기로 한 파일 (다시 요청하지 않는다)",
     input.alreadyRead.length ? input.alreadyRead.map((path) => `- ${path}`).join("\n") : "(없음)",
-    input.decideNo === 1 && input.alreadyRead.length > 0
-      ? "위 파일(README·매니페스트 등 시드)은 이미 읽었고, 다음 판단에서 원문을 함께 보여 준다. 이번에는 그 외에 필요한 파일(진입점, 핵심 소스, 설정, 문서, 테스트 등)을 파일 목록에서 고른다."
+    input.alreadyRead.length > 0
+      ? "위 파일은 이미 읽었다. 원문은 아래 '이번에 새로 읽은 파일 원문'이나 '이전 라운드 파일 노트'에 있다. 다시 요청하지 말고, 그 외에 필요한 파일(진입점, 핵심 소스, 설정, 문서, 테스트 등)을 파일 목록에서 고른다."
       : "",
     "## 이전 라운드 파일 노트",
     notes,

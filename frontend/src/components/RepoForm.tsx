@@ -1,8 +1,9 @@
-import { type Level, parseRepoUrl, type Purpose } from "@repoguide/shared";
+import { type Level, LevelSchema, parseRepoUrl, type Purpose, PurposeSchema } from "@repoguide/shared";
 import { type FormEvent, useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { ApiRequestError } from "../api/client";
 import { useCreateAnalysis } from "../api/queries";
+import { FailureNotice } from "./FailureNotice";
 import { LevelPicker } from "./LevelPicker";
 import { PurposePicker } from "./PurposePicker";
 
@@ -11,15 +12,18 @@ import { PurposePicker } from "./PurposePicker";
 export function RepoForm() {
   const navigate = useNavigate();
   const create = useCreateAnalysis();
-  const [repoUrl, setRepoUrl] = useState("");
+  // ?repo=&level=&purpose= 로 미리 채울 수 있다(만료된 결과의 "다시 분석하기").
+  const [params] = useSearchParams();
+  const [repoUrl, setRepoUrl] = useState(params.get("repo") ?? "");
   const [touched, setTouched] = useState(false);
-  const [level, setLevel] = useState<Level | null>(null);
-  const [purpose, setPurpose] = useState<Purpose | null>(null);
+  const [level, setLevel] = useState<Level | null>(() => LevelSchema.safeParse(params.get("level")).data ?? null);
+  const [purpose, setPurpose] = useState<Purpose | null>(() => PurposeSchema.safeParse(params.get("purpose")).data ?? null);
 
   const parsed = parseRepoUrl(repoUrl);
   const urlError = touched && !parsed.ok ? parsed.error : null;
   const ready = parsed.ok && level !== null && purpose !== null && !create.isPending;
-  const serverError = create.error instanceof ApiRequestError ? create.error.body : create.error ? { message: "요청에 실패했습니다.", action: undefined } : null;
+  // 400 invalid_url · 429 rate_limited · 503 daily_budget_exhausted 등은 서버의 고정 문구와 재시도 시각을 그대로 보여 준다.
+  const serverError = create.error instanceof ApiRequestError ? create.error.body : create.error ? { message: "요청에 실패했습니다." } : null;
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -55,12 +59,7 @@ export function RepoForm() {
       <LevelPicker value={level} onChange={setLevel} />
       <PurposePicker value={purpose} onChange={setPurpose} />
 
-      {serverError && (
-        <div role="alert" className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-          <p>{serverError.message}</p>
-          {serverError.action && <p className="mt-1">{serverError.action}</p>}
-        </div>
-      )}
+      {serverError && <FailureNotice title="분석을 시작하지 못했습니다" {...serverError} />}
 
       <button
         type="submit"

@@ -6,6 +6,8 @@ import { priceFor } from "./config/pricing.js";
 import { createPostgresDb } from "./db/client.js";
 import { createRepositories } from "./db/repositories/index.js";
 import { GitHubClient } from "./github/client.js";
+import { FreshnessCache } from "./github/freshness-cache.js";
+import { startCleanup } from "./jobs/cleanup.js";
 import { createWorker } from "./jobs/worker.js";
 import { GeminiClient } from "./llm/gemini-client.js";
 import { runAnalysis } from "./pipeline/run-analysis.js";
@@ -41,6 +43,7 @@ async function main() {
         limits,
         retentionDays: env.RETENTION_DAYS,
         clientKeySalt: env.CLIENT_KEY_SALT!,
+        freshness: new FreshnessCache(new GitHubClient({ token: env.GITHUB_TOKEN })),
       }),
   });
 
@@ -59,8 +62,10 @@ async function main() {
       }),
   });
 
+  let stopCleanup = () => {};
   const shutdown = async (signal: string) => {
     app.log.info({ signal }, "shutting down");
+    stopCleanup();
     await worker.stop();
     await app.close();
     await db.close();
@@ -80,6 +85,7 @@ async function main() {
     app.log.warn({ err: error }, "database is not reachable yet — check DATABASE_URL (GET /api/health)");
   }
   worker.start();
+  stopCleanup = startCleanup(db.db, app.log);
 }
 
 main().catch((error: unknown) => {

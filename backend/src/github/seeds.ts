@@ -1,4 +1,5 @@
 import type { Candidate } from "../db/json-types.js";
+import type { TreeEntry } from "./client.js";
 import { basename } from "./tree-filter.js";
 
 // 코드가 항상 먼저 읽는 시드 파일 (research R7). 저장소 구조에서 동적으로 정해지고,
@@ -64,15 +65,61 @@ function manifestsIn(candidates: readonly Candidate[], dir: string) {
     .map(({ candidate }) => candidate);
 }
 
-export function selectSeeds(candidates: readonly Candidate[], subpath: string | null, max = MAX_SEEDS): Seed[] {
+/** README가 일반 파일로 없는 디렉터리에서 README 이름의 심볼릭 링크를 찾는다 (모노레포의 루트 readme.md 등). */
+export function findReadmeSymlinks(
+  entries: readonly TreeEntry[],
+  candidates: readonly Candidate[],
+  dirs: readonly string[],
+): { dir: string; entry: TreeEntry }[] {
+  return dirs.flatMap((dir) => {
+    if (readmesIn(candidates, dir).length > 0) return [];
+    const entry = entries.find(
+      (item) => item.mode === "120000" && dirname(item.path) === dir && README_PATTERN.test(basename(item.path)),
+    );
+    return entry ? [{ dir, entry }] : [];
+  });
+}
+
+/** 링크 위치 기준으로 대상 경로를 정규화한다. 저장소 밖을 가리키면 null. */
+export function resolveLinkTarget(linkPath: string, target: string): string | null {
+  const trimmed = target.trim();
+  if (!trimmed || trimmed.startsWith("/")) return null;
+  const parts = dirname(linkPath) ? dirname(linkPath).split("/") : [];
+  for (const segment of trimmed.split("/")) {
+    if (segment === "" || segment === ".") continue;
+    if (segment === "..") {
+      if (parts.length === 0) return null;
+      parts.pop();
+    } else {
+      parts.push(segment);
+    }
+  }
+  return parts.length > 0 ? parts.join("/") : null;
+}
+
+/**
+ * @param readmeFallbacks 디렉터리 → 심볼릭 링크 README가 가리키는 후보 경로. 그 디렉터리에 README 파일이 없을 때 쓴다.
+ */
+export function selectSeeds(
+  candidates: readonly Candidate[],
+  subpath: string | null,
+  max = MAX_SEEDS,
+  readmeFallbacks: ReadonlyMap<string, string> = new Map(),
+): Seed[] {
   const seeds: Seed[] = [];
   const add = (candidate: Candidate | undefined, rule: string) => {
     if (!candidate || seeds.length >= max || seeds.some((seed) => seed.path === candidate.path)) return;
     seeds.push({ path: candidate.path, rule });
   };
+  const readmeOf = (dir: string, rule: string) => {
+    const regular = readmesIn(candidates, dir)[0];
+    if (regular) return add(regular, rule);
+    const linked = readmeFallbacks.get(dir);
+    add(linked ? candidates.find((candidate) => candidate.path === linked) : undefined, `${rule}(symlink)`);
+  };
 
-  if (subpath) add(readmesIn(candidates, subpath)[0], "subpath-readme");
-  add(readmesIn(candidates, "")[0], "readme");
+  if (subpath) readmeOf(subpath, "subpath-readme");
+  readmeOf("", "readme");
   if (subpath) {
     for (const manifest of manifestsIn(candidates, subpath)) {
       add(manifest, `subpath-manifest:${basename(manifest.path)}`);

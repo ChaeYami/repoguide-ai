@@ -98,11 +98,13 @@ describe("runExploration", () => {
       ["src/server.ts", "llm_request", 1],
       [".env.example", "llm_request", 1],
     ]);
-    // Decide #1은 원문 없이, Decide #2는 시드와 1라운드 파일 원문을 받는다.
-    expect(llm.calls[0]!.input).not.toContain("<<<FILE");
-    expect(llm.calls[1]!.input).toContain('<<<FILE path="README.md"');
+    // 원문은 Decide에 한 번만 보여 준다: Decide #1은 시드, Decide #2는 1라운드에 읽은 파일.
+    expect(llm.calls[0]!.input).toContain('<<<FILE path="README.md"');
+    expect(llm.calls[0]!.input).not.toContain('<<<FILE path="src/server.ts"');
     expect(llm.calls[1]!.input).toContain('<<<FILE path="src/server.ts"');
-    expect(rounds[1]!.inputFilePaths).toEqual(["README.md", "package.json", "src/server.ts", ".env.example"]);
+    expect(llm.calls[1]!.input).not.toContain('<<<FILE path="README.md"');
+    expect(rounds[0]!.inputFilePaths).toEqual(["README.md", "package.json"]);
+    expect(rounds[1]!.inputFilePaths).toEqual(["src/server.ts", ".env.example"]);
     expect(result.notes[0]!.facts).toHaveLength(1);
     expect(result.coverage.find((c) => c.sectionId === "run_commands")?.status).toBe("covered");
   });
@@ -183,18 +185,17 @@ describe("runExploration", () => {
     expect(result.workingSet.length).toBeLessThanOrEqual(12);
   });
 
-  it("(h) still shows seed contents to Decide #2 when Decide #1 only re-requests the seeds (real-run regression)", async () => {
-    const { result, rounds, llm, requested } = await explore([
-      decide({ requests: ask("README.md", "package.json") }),
-      decide({ requests: ask("src/server.ts") }),
-      decide({ sufficient: true }),
-    ]);
-    expect(rounds[0]!.requests.map((r) => r.rejectReason)).toEqual(["already_read", "already_read"]);
-    expect(llm.calls[1]!.input).toContain('<<<FILE path="README.md"');
-    expect(llm.calls[0]!.input).toContain("다음 판단에서 원문을 함께 보여 준다");
+  it("(h) gives Decide #1 the seed contents and rejects re-requests of seeds (real-run regression)", async () => {
+    // 실제 실행에서 Decide #1이 원문을 못 본 채 README·package.json만 다시 요청해 탐색이 시드에서 끝났다.
+    const { result, rounds, llm, requested } = await explore(
+      [decide({ requests: ask("README.md", "package.json", "src/server.ts") }), decide({ sufficient: true })],
+      { limits: { LIMIT_MAX_ROUNDS: "1" } },
+    );
+    expect(llm.calls[0]!.input).toContain('<<<FILE path="README.md"');
+    expect(llm.calls[0]!.input).toContain("다시 요청하지 말고");
+    expect(rounds[0]!.requests.map((r) => r.rejectReason)).toEqual(["already_read", "already_read", null]);
     expect(requested).toEqual(["src/server.ts"]);
-    expect(result.workingSet.find((f) => f.path === "src/server.ts")?.roundNo).toBe(2);
-    expect(result.stopReason).toBe("sufficient");
+    expect(result.stopReason).toBe("round_limit");
   });
 
   it("treats a Decide output that never matches the schema as 'no more candidates'", async () => {

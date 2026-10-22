@@ -4,7 +4,7 @@ import type { FileCache } from "../db/repositories/files.js";
 import { readFiles, type ReadFileResult } from "../pipeline/file-reader.js";
 import type { GitHubClient } from "./client.js";
 import { resolveRepository, type ResolvedRepository } from "./resolve-ref.js";
-import { type Seed, selectSeeds } from "./seeds.js";
+import { findReadmeSymlinks, resolveLinkTarget, type Seed, selectSeeds } from "./seeds.js";
 import { detectStack } from "./stack-detect.js";
 import { filterTree, type FilterResult } from "./tree-filter.js";
 
@@ -28,13 +28,32 @@ export interface IngestResult extends ResolvedRepository {
   detectedStack: DetectedStack;
 }
 
-type IngestClient = Pick<GitHubClient, "getRepo" | "getCommitSha" | "getTree" | "getFileRaw">;
+export type IngestClient = Pick<GitHubClient, "getRepo" | "getCommitSha" | "getTree" | "getFileRaw" | "getBlobText">;
 
-/** 저장소를 확인하고 트리를 거른다. 시드는 아직 읽지 않는다(캐시용 스냅샷을 먼저 만들 수 있도록). */
-export async function scanRepository(client: IngestClient, parsed: ParsedRepoUrl, options: Pick<IngestOptions, "maxFileBytes">) {
+/**
+ * 저장소를 확인하고 트리를 거른다. 시드는 아직 읽지 않는다(캐시용 스냅샷을 먼저 만들 수 있도록).
+ * @param options.onResolved 커밋을 고정한 직후 호출된다(진행 단계 전환용).
+ */
+export async function scanRepository(
+  client: IngestClient,
+  parsed: ParsedRepoUrl,
+  options: Pick<IngestOptions, "maxFileBytes"> & { onResolved?: () => Promise<void> },
+) {
   const resolved = await resolveRepository(client, parsed);
-  const tree = await client.getTree(resolved.repo.owner, resolved.repo.name, resolved.commitSha);
+  await options.onResolved?.();
+  const { owner, name } = resolved.repo;
+  const tree = await client.getTree(owner, name, resolved.commitSha);
   const filter = filterTree(tree.entries, { maxFileBytes: options.maxFileBytes });
+
+  // README가 심볼릭 링크뿐이면 링크 대상 파일을 시드로 쓴다 (예: 모노레포 루트 readme.md → packages/x/README.md).
+  const dirs = [...new Set(["", ...(resolved.subpath ? [resolved.subpath] : [])])];
+  const readmeFallbacks = new Map<string, string>();
+  const byPath = new Set(filter.candidates.map((candidate) => candidate.path));
+  for (const { dir, entry } of findReadmeSymlinks(tree.entries, filter.candidates, dirs)) {
+    const target = resolveLinkTarget(entry.path, await client.getBlobText(owner, name, entry.sha));
+    if (target && byPath.has(target)) readmeFallbacks.set(dir, target);
+  }
+
   return {
     ...resolved,
     treeTruncated: tree.truncated,
@@ -42,7 +61,7 @@ export async function scanRepository(client: IngestClient, parsed: ParsedRepoUrl
     filter,
     candidates: filter.candidates,
     directories: new Set(tree.entries.filter((entry) => entry.type === "tree").map((entry) => entry.path)),
-    seedPlan: selectSeeds(filter.candidates, resolved.subpath),
+    seedPlan: selectSeeds(filter.candidates, resolved.subpath, undefined, readmeFallbacks),
   };
 }
 

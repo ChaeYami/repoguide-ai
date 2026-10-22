@@ -23,6 +23,7 @@ export function analysisFromUrl(
     limits: options.limits,
     promptVersion: PROMPT_VERSION,
     clientKeyHash: options.clientKeyHash,
+    createdAt: now,
     expiresAt: new Date(now.getTime() + options.retentionDays * 24 * 60 * 60 * 1000),
   };
 }

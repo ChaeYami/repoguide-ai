@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { LlmError } from "../../src/llm/client.js";
-import { GeminiClient, type InteractionsApi } from "../../src/llm/gemini-client.js";
+import { GeminiClient, type InteractionsApi, retryDelayMs } from "../../src/llm/gemini-client.js";
 
 const Schema = z.object({ answer: z.string(), count: z.number().int() });
 
@@ -18,7 +18,7 @@ function request(overrides: Partial<Parameters<GeminiClient["generateStructured"
   };
 }
 
-type Reply = { output_text?: string; usage?: Record<string, number> } | { throw: { status?: number } };
+type Reply = { output_text?: string; usage?: Record<string, number> } | { throw: { status?: number; message?: string } };
 
 function fakeApi(replies: Reply[]) {
   const params: Record<string, unknown>[] = [];
@@ -85,7 +85,7 @@ describe("GeminiClient.generateStructured", () => {
   it("backs off on 429 and 5xx up to three times", async () => {
     const { client, sleeps } = fakeApi([{ throw: { status: 429 } }, { throw: { status: 503 } }, ok({ answer: "a", count: 0 })]);
     await expect(client.generateStructured(request())).resolves.toMatchObject({ attempts: 3 });
-    expect(sleeps).toEqual([1_000, 3_000]);
+    expect(sleeps).toEqual([5_000, 15_000]);
   });
 
   it("maps exhausted rate limits to llm_rate_limited and outages to llm_unavailable", async () => {
@@ -108,4 +108,24 @@ describe("GeminiClient.generateStructured", () => {
     const { usage } = await client.generateStructured(request({ systemInstruction: "abc", input: "한국어" }));
     expect(usage).toEqual({ inputTokens: 1 + 3, outputTokens: 5, thoughtTokens: 0, usageEstimated: true });
   });
+
+  it("waits as long as the 429 response's RetryInfo asks (per-minute limits), capped at 90 seconds", async () => {
+    const quota = (seconds: string) => ({
+      throw: { status: 429, message: `{"error":{"code":429,"status":"RESOURCE_EXHAUSTED","details":[{"@type":"type.googleapis.com/google.rpc.RetryInfo","retryDelay":"${seconds}s"}]}}` },
+    });
+    const { client, sleeps } = fakeApi([quota("41"), quota("300"), ok({ answer: "a", count: 0 })]);
+    await expect(client.generateStructured(request())).resolves.toMatchObject({ attempts: 3 });
+    expect(sleeps).toEqual([42_000, 90_000]);
+  });
 });
+
+describe("retryDelayMs", () => {
+  it.each([
+    ['{"retryDelay":"41s"}', 41_000],
+    ['retryDelay\\":\\"7.5s', 7_500],
+    ["no hint", null],
+  ])("%s → %s", (message, expected) => {
+    expect(retryDelayMs(new Error(message))).toBe(expected);
+  });
+});
+

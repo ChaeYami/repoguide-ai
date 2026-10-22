@@ -342,7 +342,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 완료 조건:
     - research R1 루프를 구현한다
       - 시드를 읽는다
-      - Decide #1에는 트리 목록, 수준·목적, 카탈로그, 남은 예산을 보낸다
+      - Decide #1에는 트리 목록, 시드 원문, 수준·목적, 카탈로그, 남은 예산을 보낸다
       - 요청을 검증한 뒤 Round 1을 읽는다
       - Decide #2에는 새 원문과 누적 노트를 보낸다
       - `sufficient=false`이고 예산이 남았으면 Round 2·3을 읽는다
@@ -497,7 +497,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
 
 **Independent Test**: 완료된 매뉴얼에서 확인됨 블록의 근거 링크가 분석 커밋의 실제 라인을 연다. "분석 내역" 탭에서 파일 목록, 선택 이유, 라운드별 요청·거절, 커밋, 한도 도달 여부를 볼 수 있다(quickstart V2, V5, V6).
 
-- [ ] T030 [US2] 분석 내역 API를 구현한다: `backend/src/api/routes/analyses.ts`(`GET /api/analyses/{id}/trace`), `backend/tests/unit/api-trace.test.ts`
+- [X] T030 [US2] 분석 내역 API를 구현한다: `backend/src/api/routes/analyses.ts`(`GET /api/analyses/{id}/trace`), `backend/tests/unit/api-trace.test.ts`
   - 의존: T025
   - 완료 조건:
     - contracts/http-api.md `/trace` 응답 형태 그대로 반환한다: `repo`, `detectedStack`, `treeStats`, `limits`, `usage`, `stopReason`, `limitReached`, `decisions[]`(요청별 accepted·rejectReason), `files[]`(source, reason, roundNo, truncated, contentIncludedInWrite, 커밋 고정 `githubUrl`)
@@ -505,7 +505,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w backend -- api-trace` 통과. 항목: 계약 스키마 검증, 진행 중 부분 기록, 404.
   - 관련: FR-011, FR-027, Constitution I, II
 
-- [ ] T031 [P] [US2] 분석 내역 화면을 구현한다: `frontend/src/components/TracePanel.tsx`, `frontend/src/pages/AnalysisPage.tsx`("매뉴얼 / 분석 내역" 탭), `frontend/src/api/queries.ts`(`useTrace`), `frontend/tests/TracePanel.test.tsx`
+- [X] T031 [P] [US2] 분석 내역 화면을 구현한다: `frontend/src/components/TracePanel.tsx`, `frontend/src/pages/AnalysisPage.tsx`("매뉴얼 / 분석 내역" 탭), `frontend/src/api/queries.ts`(`useTrace`), `frontend/tests/TracePanel.test.tsx`
   - 의존: T026, T028(백엔드 T030과 병렬 가능, 계약 기준)
   - 완료 조건:
     - 파일 목록: 경로 링크, 라운드, 출처 라벨(시드/AI 요청/재사용), 선택 이유, 잘림·원문 포함 여부
@@ -515,7 +515,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w frontend -- TracePanel` 통과. fixture 응답으로 거절 사유 라벨과 링크를 확인한다.
   - 관련: FR-027, US2 #3
 
-- [ ] T032 [US2] 근거 연결 검증을 끝단까지 확인한다: `backend/tests/integration/citations-e2e.test.ts`, `specs/001-repo-manual-generator/verification-log.md`
+- [X] T032 [US2] 근거 연결 검증을 끝단까지 확인한다: `backend/tests/integration/citations-e2e.test.ts`, `specs/001-repo-manual-generator/verification-log.md`
   - 의존: T024, T030, T031
   - 완료 조건:
     - 파이프라인 통합 테스트를 작성한다. Fake LLM이 다음 근거를 섞어 반환한다.
@@ -543,7 +543,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
 - 잘못된 URL, 존재하지 않는 저장소, 비공개 저장소, 빈 저장소, 큰 저장소
 - 한도 축소 설정, 요청 제한 도달
 
-- [ ] T033 [US3] 실패 응답 안전성과 재시도 안내를 보강한다: `backend/src/api/routes/analyses.ts`, `backend/src/api/messages.ts`, `backend/tests/unit/api-failure-safety.test.ts`
+- [X] T033 [US3] 실패 응답 안전성과 재시도 안내를 보강한다: `backend/src/api/routes/analyses.ts`, `backend/src/api/messages.ts`, `backend/tests/unit/api-failure-safety.test.ts`
   - 의존: T025
   - 완료 조건:
     - `GET /api/analyses/{id}`의 `failure.retryAfterSec`를 `analyses.failure_retry_at`(T034가 저장)에서 계산한다. rate-limit 계열이 아니면 null이다.
@@ -552,7 +552,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w backend -- api-failure-safety` 통과. 항목: 내부 예외 메시지를 주입한 실패 분석의 응답에 그 문자열이 없음, `github_rate_limited` 실패의 `retryAfterSec` 계산, 그 외 코드는 null.
   - 관련: FR-028, FR-029, SC-007, US3
 
-- [ ] T034 [US3] 엣지 케이스 처리를 파이프라인에 보강한다: `backend/src/pipeline/run-analysis.ts`, `backend/tests/integration/run-analysis-edge.test.ts`, `backend/tests/fixtures/github/`(엣지 fixture)
+- [X] T034 [US3] 엣지 케이스 처리를 파이프라인에 보강한다: `backend/src/pipeline/run-analysis.ts`, `backend/tests/integration/run-analysis-edge.test.ts`, `backend/tests/fixtures/github/`(엣지 fixture)
   - 의존: T024
   - 완료 조건:
     - 잘린 트리 → `partial(repo_too_large)`, 분석한 범위를 `limitations`에 표시
@@ -567,7 +567,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w backend -- run-analysis-edge` 통과. 엣지 케이스마다 fixture를 하나씩 둔다.
   - 관련: spec Edge Cases, FR-013, FR-017, FR-028
 
-- [ ] T035 [US3] 사용량 보호를 구현한다(접속 출처 요청 제한, 서비스 일일 비용 상한 예약): `backend/src/api/client-key.ts`, `backend/src/api/routes/analyses.ts`, `backend/src/pipeline/run-analysis.ts`(예약 해제), `backend/tests/unit/client-key.test.ts`, `backend/tests/db/limits.test.ts`
+- [X] T035 [US3] 사용량 보호를 구현한다(접속 출처 요청 제한, 서비스 일일 비용 상한 예약): `backend/src/api/client-key.ts`, `backend/src/api/routes/analyses.ts`, `backend/src/pipeline/run-analysis.ts`(예약 해제), `backend/tests/unit/client-key.test.ts`, `backend/tests/db/limits.test.ts`
   - 의존: T025, T024
   - 완료 조건:
     - `TRUST_PROXY`가 켜지면 `X-Forwarded-For`를 쓴다
@@ -578,7 +578,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w backend -- client-key`(고정 시계로 시간 계산, 경계값), `npm run test:db -- limits`(집계 쿼리, 동시 요청 시 일일 상한 초과 방지)
   - 관련: FR-034, FR-035, Constitution VI, research R5, R16
 
-- [ ] T036 [P] [US3] 요청 거절 표시와 재시도 안내 화면을 보강한다: `frontend/src/components/RepoForm.tsx`(400·429·503 표시), `frontend/src/components/FailureNotice.tsx`(재시도 시각), `frontend/tests/{RepoFormErrors,FailureNotice}.test.tsx`
+- [X] T036 [P] [US3] 요청 거절 표시와 재시도 안내 화면을 보강한다: `frontend/src/components/RepoForm.tsx`(400·429·503 표시), `frontend/src/components/FailureNotice.tsx`(재시도 시각), `frontend/tests/{RepoFormErrors,FailureNotice}.test.tsx`
   - 의존: T028(기본 `FailureNotice`·`PartialBanner`는 T028에 있음. 백엔드 T033·T035와 병렬 가능, 계약 기준)
   - 완료 조건:
     - `FailureNotice`에 재시도 가능 시각(`retryAfterSec`를 KST 시각으로 변환)을 추가한다
@@ -602,13 +602,13 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
 
 **Independent Test**: 완료 후 탭을 닫고 홈의 최근 목록이나 링크로 다시 접근하면 재분석 없이 3초 안에 같은 결과가 표시된다. 시크릿 창에서도 같은 링크로 결과가 보인다(quickstart V10, V11).
 
-- [ ] T038 [US4] 최근 목록 일괄 조회 API를 구현한다: `backend/src/api/routes/analyses.ts`(`GET /api/analyses?ids=`), `backend/tests/unit/api-batch.test.ts`
+- [X] T038 [US4] 최근 목록 일괄 조회 API를 구현한다: `backend/src/api/routes/analyses.ts`(`GET /api/analyses?ids=`), `backend/tests/unit/api-batch.test.ts`
   - 의존: T025
   - 완료 조건: 쉼표로 구분한 UUID를 최대 20개 받는다. 형식 오류는 400이다. 응답은 `{items, missingIds}`이며, 삭제·만료·없는 ID는 `missingIds`에 넣는다.
   - 검증: `npm test -w backend -- api-batch` 통과
   - 관련: FR-030, US4 #2, research R14
 
-- [ ] T039 [P] [US4] 브라우저 최근 분석 목록을 구현한다: `frontend/src/lib/recent-store.ts`, `frontend/src/components/RecentList.tsx`, `frontend/src/pages/HomePage.tsx`, `frontend/tests/{recent-store,RecentList}.test.tsx`
+- [X] T039 [P] [US4] 브라우저 최근 분석 목록을 구현한다: `frontend/src/lib/recent-store.ts`, `frontend/src/components/RecentList.tsx`, `frontend/src/pages/HomePage.tsx`, `frontend/tests/{recent-store,RecentList}.test.tsx`
   - 의존: T027(백엔드 T038과 병렬 가능, 계약 기준)
   - 완료 조건:
     - 분석을 생성하거나 열 때 localStorage에 항목을 추가한다(id, 저장소, 수준, 목적, 생성 시각)
@@ -618,7 +618,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w frontend -- recent-store RecentList` 통과. **저장소 접근이 예외를 던져도 화면이 동작**해야 한다.
   - 관련: FR-030, US4 #2, Edge Cases(브라우저 기록 삭제)
 
-- [ ] T040 [US4] 보관 기간 만료 처리와 만료 화면을 구현한다: `backend/src/jobs/cleanup.ts`, `backend/src/index.ts`(1시간 주기 등록), `backend/src/api/routes/analyses.ts`(410), `frontend/src/pages/AnalysisPage.tsx`(만료 상태와 "다시 분석"), `backend/tests/db/cleanup.test.ts`, `backend/tests/unit/api-expired.test.ts`
+- [X] T040 [US4] 보관 기간 만료 처리와 만료 화면을 구현한다: `backend/src/jobs/cleanup.ts`, `backend/src/index.ts`(1시간 주기 등록), `backend/src/api/routes/analyses.ts`(410), `frontend/src/pages/AnalysisPage.tsx`(만료 상태와 "다시 분석"), `backend/tests/db/cleanup.test.ts`, `backend/tests/unit/api-expired.test.ts`
   - 의존: T025, T017
   - 완료 조건:
     - `expires_at`이 지난 분석은 `status=expired`로 바꾸고, 매뉴얼·라운드·작업 집합을 삭제한 뒤 행은 남긴다
@@ -628,7 +628,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm run test:db -- cleanup`(만료 전이, 고아 스냅샷 삭제, 유효한 데이터 보존), `npm test -w backend -- api-expired`
   - 관련: research R17, Edge Cases(만료된 링크), spec Assumptions(30일 보관)
 
-- [ ] T041 [US4] US4 시나리오를 검증한다: `specs/001-repo-manual-generator/verification-log.md`
+- [X] T041 [US4] US4 시나리오를 검증한다: `specs/001-repo-manual-generator/verification-log.md`
   - 의존: T038, T039, T040
   - 완료 조건: quickstart V10, V11을 수행하고 기록한다. 재조회 시 파이프라인 호출이 없는지 서버 로그와 usage가 바뀌지 않았는지로 확인한다.
   - 검증: 재조회가 3초 이내이고(SC-009), 시크릿 창에서도 링크로 결과가 보이며, 진행 중 이탈 후 재접속하면 상태가 이어진다
@@ -644,7 +644,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
 
 **Independent Test**: 완료된 결과에서 수준을 바꿔 재생성하면 GitHub 재조회 없이 새 버전이 만들어지고, 버전 선택기로 이전 매뉴얼도 볼 수 있다. 새 커밋이 생긴 저장소에서는 "최신 커밋으로 다시 분석"이 동작한다(quickstart V12, V13).
 
-- [ ] T042 [US5] 최신 커밋 확인 API를 구현한다: `backend/src/api/routes/analyses.ts`(`GET /api/analyses/{id}/freshness`), `backend/src/github/freshness-cache.ts`, `backend/tests/unit/api-freshness.test.ts`
+- [X] T042 [US5] 최신 커밋 확인 API를 구현한다: `backend/src/api/routes/analyses.ts`(`GET /api/analyses/{id}/freshness`), `backend/src/github/freshness-cache.ts`, `backend/tests/unit/api-freshness.test.ts`
   - 의존: T025, T013
   - 완료 조건:
     - 응답은 `{analyzedCommitSha, latestCommitSha, isOutdated, checkedAt}`이다
@@ -653,7 +653,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w backend -- api-freshness` 통과. 캐시 적중 시 GitHub를 호출하지 않는다.
   - 관련: US4 #4, US5 #2, contracts/http-api.md
 
-- [ ] T043 [US5] 재생성 API와 버전 계보를 구현한다: `backend/src/api/routes/analyses.ts`(`POST /api/analyses/{id}/regenerations`, `versions`), `backend/tests/unit/api-regenerations.test.ts`
+- [X] T043 [US5] 재생성 API와 버전 계보를 구현한다: `backend/src/api/routes/analyses.ts`(`POST /api/analyses/{id}/regenerations`, `versions`), `backend/tests/unit/api-regenerations.test.ts`
   - 의존: T042, T035
   - 완료 조건:
     - 부모가 `completed` 또는 `partial`이 아니면 `409 parent_not_finished`
@@ -665,7 +665,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w backend -- api-regenerations` 통과. 모든 409·400 분기와 계보를 확인한다.
   - 관련: FR-032, FR-033, data-model.md `analyses` 검증 규칙
 
-- [ ] T044 [US5] 분석 결과 재사용(`change_options`)과 재분석(`refresh_commit`)을 파이프라인에 구현한다: `backend/src/pipeline/run-analysis.ts`, `backend/src/pipeline/explore-loop.ts`, `backend/tests/integration/regeneration.test.ts`
+- [X] T044 [US5] 분석 결과 재사용(`change_options`)과 재분석(`refresh_commit`)을 파이프라인에 구현한다: `backend/src/pipeline/run-analysis.ts`, `backend/src/pipeline/explore-loop.ts`, `backend/tests/integration/regeneration.test.ts`
   - 의존: T024, T043
   - 완료 조건:
     - `change_options`
@@ -679,7 +679,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w backend -- regeneration` 통과. 항목: 재사용 파일 GitHub 호출 0, reused 기록, 부모 불변, 목적 변경 시 추가 요청 발생, refresh 시 새 SHA.
   - 관련: FR-032, FR-033, Constitution VI, research R15
 
-- [ ] T045 [P] [US5] 재생성 화면을 구현한다: `frontend/src/components/{RegeneratePanel,FreshnessBanner,VersionSwitcher}.tsx`, `frontend/src/api/queries.ts`(`useFreshness`, `useRegenerate`), `frontend/src/pages/AnalysisPage.tsx`, `frontend/tests/{RegeneratePanel,FreshnessBanner,VersionSwitcher}.test.tsx`
+- [X] T045 [P] [US5] 재생성 화면을 구현한다: `frontend/src/components/{RegeneratePanel,FreshnessBanner,VersionSwitcher}.tsx`, `frontend/src/api/queries.ts`(`useFreshness`, `useRegenerate`), `frontend/src/pages/AnalysisPage.tsx`, `frontend/tests/{RegeneratePanel,FreshnessBanner,VersionSwitcher}.test.tsx`
   - 의존: T028(백엔드 T042~T044와 병렬 가능, 계약 기준)
   - 완료 조건:
     - `RegeneratePanel`: 수준·목적을 바꿀 수 있고, 둘 다 같으면 비활성화한다
@@ -705,7 +705,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
 
 **Purpose**: 실제 저장소 분석 검증, 조건별 차이 검증, 보안·배포 전 점검, quickstart 전체 검증
 
-- [ ] T047 실제 API 평가 스크립트를 구현한다: `backend/scripts/eval.ts`, `backend/scripts/eval-repos.json`, 루트 `eval` 스크립트
+- [X] T047 실제 API 평가 스크립트를 구현한다: `backend/scripts/eval.ts`, `backend/scripts/eval-repos.json`, 루트 `eval` 스크립트
   - 의존: T024, T030
   - 완료 조건:
     - `eval-repos.json`에 저장소 5~10개를 둔다. 각 항목에 사람이 지정한 `keyFiles`를 둔다.
@@ -745,7 +745,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: 평가자 2명 이상의 블라인드 판별 정답률 80% 이상(SC-005). 미달이면 R24의 "상위 Write 모델" 조건으로 기록한다. SC-006은 참가자 테스트 결과로 기록한다.
   - 관련: FR-020, FR-021, SC-005, SC-006
 
-- [ ] T050 보안을 점검하고 강화한다: `backend/tests/unit/security.test.ts`, `specs/001-repo-manual-generator/verification-log.md`
+- [X] T050 보안을 점검하고 강화한다: `backend/tests/unit/security.test.ts`, `specs/001-repo-manual-generator/verification-log.md`
   - 의존: T037
   - 완료 조건:
     - 프론트 빌드 산출물(`frontend/dist`)에 비밀값 패턴(`AIza`, `github_pat_`, `postgresql://`)이 없음을 검사한다
@@ -757,7 +757,7 @@ description: "Task list for Agentic 개인 맞춤 저장소 매뉴얼 생성"
   - 검증: `npm test -w backend -- security` 통과, `npm audit --audit-level=high` 통과, 점검 결과를 기록한다
   - 관련: Constitution 보안 제약, FR-015, FR-029, research R9, R12
 
-- [ ] T051 프로덕션 단일 서비스 실행과 배포 전 점검을 수행한다: 루트 `package.json`(`build`, `start`), `specs/001-repo-manual-generator/verification-log.md`
+- [X] T051 프로덕션 단일 서비스 실행과 배포 전 점검을 수행한다: 루트 `package.json`(`build`, `start`), `specs/001-repo-manual-generator/verification-log.md`
   - 의존: T050
   - 완료 조건:
     - `npm run build`가 shared → frontend → backend 순서로 빌드한다

@@ -129,3 +129,13 @@ describe("worker", () => {
     expect((await repos.analyses.getById(id))!.status).toBe("completed");
   });
 });
+
+describe("claimById (scripts that run analyses directly)", () => {
+  it("leases the given analysis so a running server's worker does not pick it up", async () => {
+    const mine = await repos.analyses.create(newAnalysisInput());
+    const claimed = await repos.analyses.claimById(mine.id, "dev-analyze", 1_200_000);
+    expect(claimed).toMatchObject({ id: mine.id, status: "running", leaseOwner: "dev-analyze", attemptCount: 1 });
+    expect(await repos.analyses.claimNext("server-worker", 60_000)).toBeNull();
+    expect(await repos.analyses.claimById(mine.id, "other", 1_000)).toBeNull();
+  });
+});

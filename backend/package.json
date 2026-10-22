@@ -14,7 +14,9 @@
     "db:migrate": "tsx --conditions=source scripts/db-migrate.ts",
     "dev:ingest": "tsx --conditions=source scripts/dev-ingest.ts",
     "llm:ping": "tsx --conditions=source scripts/llm-ping.ts",
-    "dev:analyze": "tsx --conditions=source scripts/dev-analyze.ts"
+    "dev:analyze": "tsx --conditions=source scripts/dev-analyze.ts",
+    "eval": "tsx --conditions=source scripts/eval.ts",
+    "blind-kit": "tsx --conditions=source scripts/blind-kit.ts"
   },
   "dependencies": {
     "@fastify/static": "^10.1.7",

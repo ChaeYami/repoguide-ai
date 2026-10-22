@@ -1,6 +1,5 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { FailureNotice } from "../src/components/FailureNotice";
 import { PartialBanner } from "../src/components/PartialBanner";
 
 describe("PartialBanner", () => {
@@ -23,17 +22,5 @@ describe("PartialBanner", () => {
   it("renders nothing without reasons or limitations", () => {
     const { container } = render(<PartialBanner reasons={[]} limitations={[]} />);
     expect(container).toBeEmptyDOMElement();
-  });
-});
-
-describe("FailureNotice", () => {
-  it("shows the fixed message and the action", () => {
-    render(
-      <FailureNotice
-        failure={{ code: "repo_not_found_or_private", message: "저장소를 찾을 수 없거나 비공개 저장소입니다. 공개 저장소만 지원합니다.", action: "URL이 맞는지 확인해 주세요.", retryAfterSec: null }}
-      />,
-    );
-    expect(screen.getByRole("alert")).toHaveTextContent("공개 저장소만 지원합니다");
-    expect(screen.getByText("URL이 맞는지 확인해 주세요.")).toBeInTheDocument();
   });
 });

@@ -1,4 +1,4 @@
-import type { AnalysisStatus } from "@repoguide/shared";
+import type { AnalysisStatus, RegenerationRequest } from "@repoguide/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { api, ApiRequestError } from "./client";
 
@@ -37,6 +37,43 @@ export function useManual(id: string, enabled: boolean) {
     staleTime: Infinity,
     retry: shouldRetry,
   });
+}
+
+/** 분석 내역. 탭을 열었을 때만 불러오고, 분석이 진행 중이면 함께 폴링한다. */
+export function useTrace(id: string, options: { enabled: boolean; status: AnalysisStatus | undefined }) {
+  return useQuery({
+    queryKey: ["trace", id],
+    queryFn: () => api.getTrace(id),
+    enabled: options.enabled,
+    refetchInterval: pollInterval(options.status),
+    retry: shouldRetry,
+  });
+}
+
+/** 최근 목록의 현재 상태. 진행 중인 항목이 있으면 함께 폴링한다. */
+export function useRecentStatuses(ids: string[]) {
+  return useQuery({
+    queryKey: ["recent", ids],
+    queryFn: () => api.getBatch(ids),
+    enabled: ids.length > 0,
+    refetchInterval: (query) => (query.state.data?.items.some((item) => isActive(item.status)) ? POLL_INTERVAL_MS : false),
+    retry: shouldRetry,
+  });
+}
+
+/** 분석 이후 새 커밋이 생겼는지 (US5). 서버가 5분간 캐시한다. */
+export function useFreshness(id: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ["freshness", id],
+    queryFn: () => api.getFreshness(id),
+    enabled,
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+}
+
+export function useRegenerate(id: string) {
+  return useMutation({ mutationFn: (request: RegenerationRequest) => api.regenerate(id, request) });
 }
 
 export function useCreateAnalysis() {

@@ -12,7 +12,7 @@ import type { RepoContext } from "../llm/prompts/context.js";
 import { buildDecidePrompt } from "../llm/prompts/decide.js";
 import { decideOutputSchema, type DecideOutput } from "../llm/schemas.js";
 import type { BudgetGuard } from "./budget.js";
-import { readFiles, type SkippedReason } from "./file-reader.js";
+import { type ReadFileResult, readFiles, type SkippedReason } from "./file-reader.js";
 import type { ProgressReporter } from "./progress.js";
 import { validateDecideOutput } from "./request-validator.js";
 
@@ -59,6 +59,11 @@ export interface ExploreDeps {
   progress: ProgressReporter;
   decideModel: string;
   signal?: AbortSignal;
+  /** 이 시각(epoch ms)이 지나면 탐색을 멈추고 timeout으로 끝낸다. 남은 시간은 매뉴얼 작성 몫이다. */
+  deadline?: number;
+  now?: () => number;
+  /** 라운드마다 읽은 결과를 넘긴다(분석 도중 저장소 삭제 감지 등). 예외를 던지면 분석이 실패한다. */
+  onFilesRead?: (results: readonly ReadFileResult[]) => Promise<void>;
 }
 
 export interface ExploreResult {
@@ -110,14 +115,22 @@ export async function runExploration(input: ExploreInput, deps: ExploreDeps): Pr
   };
 
   for (const file of input.initialFiles) await record(file);
-  // 시드 원문은 Decide #2에 함께 보여 준다(Decide #1은 파일 목록만 보고 고른다). 재사용 파일은 노트가 이미 있다.
+  // 시드는 이미 읽었으므로 원문을 Decide #1에 바로 보여 준다. 원문을 못 본 채 판단하면 같은 시드를 다시 요청하기 쉽다.
+  // 재사용 파일은 부모 분석의 노트가 이미 있다.
   let pending = input.initialFiles.filter((file) => file.content !== null && file.source !== "reused");
+
+  const now = deps.now ?? Date.now;
+  const pastDeadline = () => deps.deadline !== undefined && now() >= deps.deadline;
 
   for (let decideNo = 1; decideNo <= limits.maxRounds; decideNo += 1) {
     throwIfAborted(deps.signal);
+    if (pastDeadline()) {
+      stopReason = "timeout";
+      break;
+    }
     const stage = decideNo === 1 ? "selecting_files" : decideNo === 2 ? "reading_files" : "exploring_more";
-    const newFiles = decideNo === 1 ? [] : pending;
-    if (decideNo > 1) pending = [];
+    const newFiles = pending;
+    pending = [];
 
     const listing = buildTreeListing(input.candidates, { maxEntries: TREE_LISTING_MAX_ENTRIES, expanded });
     const prompt = buildDecidePrompt({
@@ -210,8 +223,6 @@ export async function runExploration(input: ExploreInput, deps: ExploreDeps): Pr
       break;
     }
     if (validation.accepted.length === 0 && validation.expandDirectories.length === 0) {
-      // Decide #1은 시드 원문을 보지 못한 채 판단했다. 새 요청이 없어도 원문을 보여 주고 다시 판단하게 한다.
-      if (decideNo === 1 && pending.length > 0 && !invalidOutput) continue;
       stopReason = (!invalidOutput && stopReasonFromRejections(validation.records)) || "no_more_candidates";
       break;
     }
@@ -220,6 +231,10 @@ export async function runExploration(input: ExploreInput, deps: ExploreDeps): Pr
     const roundAllowed = budget.canStartRound();
     if (!roundAllowed.ok) {
       stopReason = roundAllowed.reason;
+      break;
+    }
+    if (pastDeadline()) {
+      stopReason = "timeout";
       break;
     }
     throwIfAborted(deps.signal);
@@ -244,6 +259,7 @@ export async function runExploration(input: ExploreInput, deps: ExploreDeps): Pr
     );
     budget.recordRound();
     budget.recordFilesRead(results.length);
+    await deps.onFilesRead?.(results);
 
     for (const [index, result] of results.entries()) {
       const file: WorkingFile = {

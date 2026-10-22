@@ -7,6 +7,11 @@ import { actualCost, type CallEstimate } from "../llm/cost.js";
 // 실행 단위 예산 (Constitution VI, research R5). 모든 GitHub·LLM 호출 직전에 코드가 검사한다.
 
 export type LimitStopReason = Exclude<StopReason, "sufficient" | "no_more_candidates">;
+
+/** 한도 때문에 탐색이 멈췄는지 (상태 판정·분석 내역의 limitReached가 같은 기준을 쓴다) */
+export function isLimitStop(reason: StopReason | null | undefined): reason is LimitStopReason {
+  return reason != null && reason !== "sufficient" && reason !== "no_more_candidates";
+}
 export type BudgetCheck = { ok: true } | { ok: false; reason: LimitStopReason };
 
 const OK: BudgetCheck = { ok: true };

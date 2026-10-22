@@ -55,7 +55,35 @@ export function createFilesRepository(db: Database) {
         .where(eq(exploredFiles.analysisId, analysisId))
         .orderBy(asc(exploredFiles.roundNo), asc(exploredFiles.path));
     },
+
+    /** 작업 집합과 파일 정보(크기·잘림·원문). 분석 내역(원문 제외)과 재생성 재사용(원문 포함)에 쓴다. */
+    async listWorkingSet<WithContent extends boolean = false>(
+      analysisId: string,
+      options: { withContent?: WithContent } = {},
+    ): Promise<WorkingSetRow<WithContent>[]> {
+      const rows = await db
+        .select({
+          explored: exploredFiles,
+          sizeBytes: snapshotFiles.sizeBytes,
+          truncated: snapshotFiles.truncated,
+          lineCount: snapshotFiles.lineCount,
+          skippedReason: snapshotFiles.skippedReason,
+          ...(options.withContent ? { content: snapshotFiles.content } : {}),
+        })
+        .from(exploredFiles)
+        .innerJoin(snapshotFiles, eq(exploredFiles.snapshotFileId, snapshotFiles.id))
+        .where(eq(exploredFiles.analysisId, analysisId))
+        .orderBy(asc(exploredFiles.roundNo), asc(exploredFiles.path));
+      return rows.map(({ explored, ...file }) => ({ ...explored, ...file })) as WorkingSetRow<WithContent>[];
+    },
   };
 }
+
+export type WorkingSetRow<WithContent extends boolean = false> = ExploredFileRow & {
+  sizeBytes: number;
+  truncated: boolean;
+  lineCount: number;
+  skippedReason: string | null;
+} & (WithContent extends true ? { content: string | null } : object);
 
 export type FilesRepository = ReturnType<typeof createFilesRepository>;

@@ -23,7 +23,9 @@
     "db:migrate": "npm run db:migrate -w backend",
     "dev:ingest": "npm run dev:ingest -w backend --",
     "llm:ping": "npm run llm:ping -w backend",
-    "dev:analyze": "npm run dev:analyze -w backend --"
+    "dev:analyze": "npm run dev:analyze -w backend --",
+    "eval": "npm run eval -w backend --",
+    "blind-kit": "npm run blind-kit -w backend --"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

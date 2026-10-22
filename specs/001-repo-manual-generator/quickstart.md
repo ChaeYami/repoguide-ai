@@ -178,7 +178,9 @@ npm run eval                # 실제 GitHub·Gemini로 평가 저장소 분석 �
   - Build: `npm ci && npm run build`
   - Start: `npm start`
   - Health check: `/api/health`
-- 2장의 환경 변수를 호스팅 비밀값으로 등록하고 `TRUST_PROXY=true`로 둔다.
+- 2장의 환경 변수를 호스팅 비밀값으로 등록하고 `TRUST_PROXY=true`, **`NODE_ENV=production`**으로 둔다.
+  - `NODE_ENV=production`이어야 서버가 빌드된 화면(`frontend/dist`)을 함께 서빙하고 `0.0.0.0`에서
+    접속을 받는다. 없으면 `127.0.0.1`에만 열려 외부에서 접속할 수 없다.
   - 호스팅 환경이 IPv4 전용이면 `DATABASE_URL`은 Session pooler 문자열을 쓴다.
 - 공개 전 점검:
   - Gemini 결제 Tier 1 전환 (1.1)
