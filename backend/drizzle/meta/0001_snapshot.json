@@ -1,0 +1,1014 @@
+{
+  "id": "3a4b01eb-2621-4aab-b8e2-829ae5d2b508",
+  "prevId": "3e4169f9-4499-446e-aceb-f297bccdf982",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.analyses": {
+      "name": "analyses",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "root_analysis_id": {
+          "name": "root_analysis_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parent_analysis_id": {
+          "name": "parent_analysis_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "regeneration_mode": {
+          "name": "regeneration_mode",
+          "type": "regeneration_mode",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "repo_owner": {
+          "name": "repo_owner",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "repo_name": {
+          "name": "repo_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "requested_ref": {
+          "name": "requested_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subpath": {
+          "name": "subpath",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "snapshot_id": {
+          "name": "snapshot_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "level": {
+          "name": "level",
+          "type": "level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "purpose": {
+          "name": "purpose",
+          "type": "purpose",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "analysis_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'queued'"
+        },
+        "stage": {
+          "name": "stage",
+          "type": "analysis_stage",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'queued'"
+        },
+        "progress": {
+          "name": "progress",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "stop_reason": {
+          "name": "stop_reason",
+          "type": "stop_reason",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "failure_code": {
+          "name": "failure_code",
+          "type": "failure_code",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "failure_retry_at": {
+          "name": "failure_retry_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "partial_reasons": {
+          "name": "partial_reasons",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "limits": {
+          "name": "limits",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usage": {
+          "name": "usage",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reserved_cost_usd": {
+          "name": "reserved_cost_usd",
+          "type": "numeric(10, 4)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "prompt_version": {
+          "name": "prompt_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "client_key_hash": {
+          "name": "client_key_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lease_owner": {
+          "name": "lease_owner",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lease_expires_at": {
+          "name": "lease_expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attempt_count": {
+          "name": "attempt_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "finished_at": {
+          "name": "finished_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "analyses_status_created_idx": {
+          "name": "analyses_status_created_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "analyses_client_created_idx": {
+          "name": "analyses_client_created_idx",
+          "columns": [
+            {
+              "expression": "client_key_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "analyses_root_created_idx": {
+          "name": "analyses_root_created_idx",
+          "columns": [
+            {
+              "expression": "root_analysis_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "analyses_expires_idx": {
+          "name": "analyses_expires_idx",
+          "columns": [
+            {
+              "expression": "expires_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "analyses_inflight_dedup_idx": {
+          "name": "analyses_inflight_dedup_idx",
+          "columns": [
+            {
+              "expression": "repo_owner",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "repo_name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "requested_ref",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "level",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "purpose",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "where": "\"analyses\".\"status\" in ('queued', 'running')",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "analyses_root_analysis_id_analyses_id_fk": {
+          "name": "analyses_root_analysis_id_analyses_id_fk",
+          "tableFrom": "analyses",
+          "columnsFrom": [
+            "root_analysis_id"
+          ],
+          "tableTo": "analyses",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "analyses_parent_analysis_id_analyses_id_fk": {
+          "name": "analyses_parent_analysis_id_analyses_id_fk",
+          "tableFrom": "analyses",
+          "columnsFrom": [
+            "parent_analysis_id"
+          ],
+          "tableTo": "analyses",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "analyses_snapshot_id_repo_snapshots_id_fk": {
+          "name": "analyses_snapshot_id_repo_snapshots_id_fk",
+          "tableFrom": "analyses",
+          "columnsFrom": [
+            "snapshot_id"
+          ],
+          "tableTo": "repo_snapshots",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "analyses_failed_requires_code": {
+          "name": "analyses_failed_requires_code",
+          "value": "\"analyses\".\"status\" <> 'failed' OR \"analyses\".\"failure_code\" IS NOT NULL"
+        },
+        "analyses_partial_requires_reasons": {
+          "name": "analyses_partial_requires_reasons",
+          "value": "\"analyses\".\"status\" <> 'partial' OR jsonb_array_length(\"analyses\".\"partial_reasons\") > 0"
+        },
+        "analyses_regeneration_requires_parent": {
+          "name": "analyses_regeneration_requires_parent",
+          "value": "\"analyses\".\"regeneration_mode\" IS NULL OR \"analyses\".\"parent_analysis_id\" IS NOT NULL"
+        },
+        "analyses_attempt_count_nonnegative": {
+          "name": "analyses_attempt_count_nonnegative",
+          "value": "\"analyses\".\"attempt_count\" >= 0"
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.exploration_rounds": {
+      "name": "exploration_rounds",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "analysis_id": {
+          "name": "analysis_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "decide_no": {
+          "name": "decide_no",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "model": {
+          "name": "model",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "input_file_paths": {
+          "name": "input_file_paths",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "requests": {
+          "name": "requests",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expanded_directories": {
+          "name": "expanded_directories",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "coverage": {
+          "name": "coverage",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_notes": {
+          "name": "file_notes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sufficient": {
+          "name": "sufficient",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usage": {
+          "name": "usage",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "exploration_rounds_analysis_id_analyses_id_fk": {
+          "name": "exploration_rounds_analysis_id_analyses_id_fk",
+          "tableFrom": "exploration_rounds",
+          "columnsFrom": [
+            "analysis_id"
+          ],
+          "tableTo": "analyses",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "exploration_rounds_decide_unique": {
+          "name": "exploration_rounds_decide_unique",
+          "columns": [
+            "analysis_id",
+            "decide_no"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "exploration_rounds_decide_no_positive": {
+          "name": "exploration_rounds_decide_no_positive",
+          "value": "\"exploration_rounds\".\"decide_no\" >= 1"
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.explored_files": {
+      "name": "explored_files",
+      "schema": "",
+      "columns": {
+        "analysis_id": {
+          "name": "analysis_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "snapshot_file_id": {
+          "name": "snapshot_file_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "path": {
+          "name": "path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "round_no": {
+          "name": "round_no",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "file_source",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content_included_in_write": {
+          "name": "content_included_in_write",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "explored_files_analysis_id_analyses_id_fk": {
+          "name": "explored_files_analysis_id_analyses_id_fk",
+          "tableFrom": "explored_files",
+          "columnsFrom": [
+            "analysis_id"
+          ],
+          "tableTo": "analyses",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "explored_files_snapshot_file_id_snapshot_files_id_fk": {
+          "name": "explored_files_snapshot_file_id_snapshot_files_id_fk",
+          "tableFrom": "explored_files",
+          "columnsFrom": [
+            "snapshot_file_id"
+          ],
+          "tableTo": "snapshot_files",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "explored_files_analysis_id_path_pk": {
+          "name": "explored_files_analysis_id_path_pk",
+          "columns": [
+            "analysis_id",
+            "path"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "explored_files_round_no_nonnegative": {
+          "name": "explored_files_round_no_nonnegative",
+          "value": "\"explored_files\".\"round_no\" >= 0"
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.manuals": {
+      "name": "manuals",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "analysis_id": {
+          "name": "analysis_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "level": {
+          "name": "level",
+          "type": "level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "purpose": {
+          "name": "purpose",
+          "type": "purpose",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "document": {
+          "name": "document",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "stats": {
+          "name": "stats",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "model": {
+          "name": "model",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usage": {
+          "name": "usage",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "manuals_analysis_id_analyses_id_fk": {
+          "name": "manuals_analysis_id_analyses_id_fk",
+          "tableFrom": "manuals",
+          "columnsFrom": [
+            "analysis_id"
+          ],
+          "tableTo": "analyses",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "manuals_analysis_unique": {
+          "name": "manuals_analysis_unique",
+          "columns": [
+            "analysis_id"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.repo_snapshots": {
+      "name": "repo_snapshots",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "owner": {
+          "name": "owner",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "commit_sha": {
+          "name": "commit_sha",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ref": {
+          "name": "ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "default_branch": {
+          "name": "default_branch",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "primary_language": {
+          "name": "primary_language",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tree_entry_count": {
+          "name": "tree_entry_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "candidate_count": {
+          "name": "candidate_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tree_truncated": {
+          "name": "tree_truncated",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "candidates": {
+          "name": "candidates",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "detected_stack": {
+          "name": "detected_stack",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "repo_snapshots_commit_unique": {
+          "name": "repo_snapshots_commit_unique",
+          "columns": [
+            "owner",
+            "name",
+            "commit_sha"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "repo_snapshots_commit_sha_format": {
+          "name": "repo_snapshots_commit_sha_format",
+          "value": "\"repo_snapshots\".\"commit_sha\" ~ '^[0-9a-f]{40}$'"
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.snapshot_files": {
+      "name": "snapshot_files",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "snapshot_id": {
+          "name": "snapshot_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "path": {
+          "name": "path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "blob_sha": {
+          "name": "blob_sha",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "size_bytes": {
+          "name": "size_bytes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "line_count": {
+          "name": "line_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "truncated": {
+          "name": "truncated",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "skipped_reason": {
+          "name": "skipped_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fetched_at": {
+          "name": "fetched_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "snapshot_files_snapshot_id_repo_snapshots_id_fk": {
+          "name": "snapshot_files_snapshot_id_repo_snapshots_id_fk",
+          "tableFrom": "snapshot_files",
+          "columnsFrom": [
+            "snapshot_id"
+          ],
+          "tableTo": "repo_snapshots",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "snapshot_files_path_unique": {
+          "name": "snapshot_files_path_unique",
+          "columns": [
+            "snapshot_id",
+            "path"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    }
+  },
+  "enums": {
+    "public.analysis_stage": {
+      "name": "analysis_stage",
+      "schema": "public",
+      "values": [
+        "queued",
+        "validating_repo",
+        "scanning_structure",
+        "selecting_files",
+        "reading_files",
+        "exploring_more",
+        "writing_manual",
+        "done"
+      ]
+    },
+    "public.analysis_status": {
+      "name": "analysis_status",
+      "schema": "public",
+      "values": [
+        "queued",
+        "running",
+        "completed",
+        "partial",
+        "failed",
+        "expired"
+      ]
+    },
+    "public.failure_code": {
+      "name": "failure_code",
+      "schema": "public",
+      "values": [
+        "invalid_url",
+        "repo_not_found_or_private",
+        "repo_empty",
+        "ref_not_found",
+        "no_analyzable_files",
+        "limit_reached",
+        "github_rate_limited",
+        "github_unavailable",
+        "llm_rate_limited",
+        "llm_unavailable",
+        "manual_generation_failed",
+        "timeout",
+        "internal_error"
+      ]
+    },
+    "public.file_source": {
+      "name": "file_source",
+      "schema": "public",
+      "values": [
+        "seed",
+        "llm_request",
+        "reused"
+      ]
+    },
+    "public.level": {
+      "name": "level",
+      "schema": "public",
+      "values": [
+        "beginner",
+        "vibe_coder",
+        "developer"
+      ]
+    },
+    "public.purpose": {
+      "name": "purpose",
+      "schema": "public",
+      "values": [
+        "understand",
+        "setup",
+        "modify"
+      ]
+    },
+    "public.regeneration_mode": {
+      "name": "regeneration_mode",
+      "schema": "public",
+      "values": [
+        "change_options",
+        "refresh_commit"
+      ]
+    },
+    "public.stop_reason": {
+      "name": "stop_reason",
+      "schema": "public",
+      "values": [
+        "sufficient",
+        "no_more_candidates",
+        "round_limit",
+        "file_limit",
+        "cost_limit",
+        "token_limit",
+        "github_call_limit",
+        "timeout"
+      ]
+    }
+  },
+  "schemas": {},
+  "views": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
